@@ -18,11 +18,11 @@ public class App extends Application {
     public void start(Stage stage) throws IOException {
 
         // create root node
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("main.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("main-view.fxml"));
         Parent root = loader.load();
 
         // create scene
-        Scene scene = new Scene(root,640,480, Color.WHITE);
+        Scene scene = new Scene(root,890,570, Color.WHITE);
 
         // set title of stage
         stage.setTitle("Image Color Quantizer");
@@ -30,7 +30,6 @@ public class App extends Application {
         // set app icon
         Image appIcon = new Image("images/app_logo.png");
         stage.getIcons().add(appIcon);
-
 
 
         // set stage size
