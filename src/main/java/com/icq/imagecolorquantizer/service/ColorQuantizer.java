@@ -1,17 +1,20 @@
 package com.icq.imagecolorquantizer.service;
+
+import com.icq.imagecolorquantizer.model.ProcessedImage;
+
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.io.IOException;
+import java.util.*;
+
 public class ColorQuantizer {
 
     // Method 1 ,
     // Input imageName , name of the image in path => src/imageName,
     // And k => Number of possible colors in the result = k^3
-    static BufferedImage uniform_quantization(String imageName, int k){  // Number of possible colors in the result = k^3
+    static BufferedImage uniform_quantization(String imageName, int k) {  // Number of possible colors in the result = k^3
         BufferedImage image;
         BufferedImage quantizedImage = null;
         try {
@@ -28,10 +31,10 @@ public class ColorQuantizer {
             // Quantized image
             quantizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
-            int channelRange = (256 + k - 1)/k;
+            int channelRange = (256 + k - 1) / k;
             int[] minValues = new int[k]; // Array to store the minimum values for each channel (R, G, B)
             int[] maxValues = new int[k]; // Array to store the maximum values for each channel (R, G, B)
-            int[] representative_color = new int [k]; // Representative color array
+            int[] representative_color = new int[k]; // Representative color array
 
             // Calculate the range for each channel
             for (int channel = 0; channel < k; channel++) {
@@ -41,12 +44,12 @@ public class ColorQuantizer {
 
             // TODO delete this just to printing the ranges
             for (int channel = 0; channel < k; channel++) {
-                System.out.println(minValues[channel] +" - "+maxValues[channel]);
+                System.out.println(minValues[channel] + " - " + maxValues[channel]);
             }
 
             // Calculate the representative colors for ranges
             for (int i = 0; i < k; i++) {
-                representative_color[i] =(maxValues[i] + minValues[i])/2;
+                representative_color[i] = (maxValues[i] + minValues[i]) / 2;
             }
 
             // TODO delete this
@@ -54,8 +57,8 @@ public class ColorQuantizer {
                 System.out.println(representative_color[i]);
             }
 
-            for(int y=0 ;y<height ;y++){
-                for(int x=0 ; x<width ;x++){
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
                     // Extract the RGB values of the current pixel
                     int pixel = image.getRGB(x, y);
                     int red = (pixel >> 16) & 0xFF;
@@ -73,14 +76,7 @@ public class ColorQuantizer {
                 }
             }
 
-            // Define the file path and name for saving the quantized image
-            String outputPath = "src/("+imageName+")_Quantized"+new Date().getTime()+"."+imageExtension;
-
-            // Save the quantized image
-            File outputFile = new File(outputPath);
-            ImageIO.write(quantizedImage, imageExtension, outputFile);
-            System.out.println("Quantized image saved successfully.");
-        }catch (Exception e) {
+        } catch (Exception e) {
             System.out.println("image not found");
             e.printStackTrace();
         }
@@ -88,8 +84,8 @@ public class ColorQuantizer {
     }
 
     // Extract Color Palette
-    // Input image , the reslut of uniform_quantization method
-    public static Set<Color> extractColorPalette(BufferedImage image){
+    // Input image , the result of uniform_quantization method
+    public static Set<Color> extractColorPalette(BufferedImage image) {
         // Get the dimensions of the image
         int width = image.getWidth();
         int height = image.getHeight();
@@ -114,7 +110,7 @@ public class ColorQuantizer {
         int[][] flattened_img_array = new int[image.getWidth() * image.getHeight()][5];
         int counter = 0;
 
-        for(int x = 0; x < image.getWidth(); x++) {
+        for (int x = 0; x < image.getWidth(); x++) {
             for (int y = 0; y < image.getHeight(); y++) {
                 Color color = new Color(image.getRGB(x, y));
                 flattened_img_array[counter][0] = color.getRed();
@@ -150,10 +146,8 @@ public class ColorQuantizer {
 
         if (g_range >= r_range && g_range >= b_range)
             space_with_highest_range = 1;
-        else if(b_range >= r_range && b_range >= g_range)
+        else if (b_range >= r_range)
             space_with_highest_range = 2;
-        else if (r_range >= b_range && r_range >= g_range)
-            space_with_highest_range = 0;
 
 
         int finalSpace_with_highest_range = space_with_highest_range;
@@ -161,15 +155,15 @@ public class ColorQuantizer {
 
         int median_index = (flattened_img_array.length + 1) / 2;
 
-        splitIntoBuckets(image, output, Arrays.copyOfRange(flattened_img_array, 0, median_index), depth-1);
-        splitIntoBuckets(image, output, Arrays.copyOfRange(flattened_img_array, median_index, flattened_img_array.length), depth-1);
+        splitIntoBuckets(image, output, Arrays.copyOfRange(flattened_img_array, 0, median_index), depth - 1);
+        splitIntoBuckets(image, output, Arrays.copyOfRange(flattened_img_array, median_index, flattened_img_array.length), depth - 1);
 
     }
 
     private static int getMaxColumnValue(BufferedImage image, int[][] array, int column) {
         int max = Integer.MIN_VALUE;
 
-        for(int i = 0; i < array.length; i++) {
+        for (int i = 0; i < array.length; i++) {
             max = Math.max(max, array[i][column]);
         }
 
@@ -179,7 +173,7 @@ public class ColorQuantizer {
     private static int getMinColumnValue(BufferedImage image, int[][] array, int column) {
         int min = Integer.MAX_VALUE;
 
-        for(int i = 0; i < array.length; i++) {
+        for (int i = 0; i < array.length; i++) {
             min = Math.min(min, array[i][column]);
         }
 
@@ -189,7 +183,7 @@ public class ColorQuantizer {
     private static int getAvgColumnValue(int[][] array, int column) {
         int avg = 0;
 
-        for(int i = 0; i < array.length; i++) {
+        for (int i = 0; i < array.length; i++) {
             avg += array[i][column];
         }
 

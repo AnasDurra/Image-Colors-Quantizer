@@ -1,6 +1,7 @@
 module com.icq.imagecolorquantizer {
     requires javafx.controls;
     requires javafx.fxml;
+    requires java.desktop;
 
 
     opens com.icq.imagecolorquantizer to javafx.fxml;
