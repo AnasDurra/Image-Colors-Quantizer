@@ -107,6 +107,107 @@ public class ColorQuantizer {
     }
 
     // Method 2
+    public static ProcessedImage medianCut(String inputPath, int depth) throws IOException {
+        BufferedImage image = ImageIO.read(new File(inputPath));
+        BufferedImage output = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+
+        int[][] flattened_img_array = new int[image.getWidth() * image.getHeight()][5];
+        int counter = 0;
+
+        for(int x = 0; x < image.getWidth(); x++) {
+            for (int y = 0; y < image.getHeight(); y++) {
+                Color color = new Color(image.getRGB(x, y));
+                flattened_img_array[counter][0] = color.getRed();
+                flattened_img_array[counter][1] = color.getGreen();
+                flattened_img_array[counter][2] = color.getBlue();
+                flattened_img_array[counter][3] = x;
+                flattened_img_array[counter][4] = y;
+
+                counter++;
+            }
+        }
+
+        splitIntoBuckets(image, output, flattened_img_array, depth);
+
+        return new ProcessedImage(output, extractColorPalette(output));
+    }
+
+    private static void splitIntoBuckets(BufferedImage image, BufferedImage output, int[][] flattened_img_array, int depth) {
+        if (flattened_img_array.length == 0) {
+            return;
+        }
+
+        if (depth == 0) {
+            medianCutQuantize(image, output, flattened_img_array);
+            return;
+        }
+
+        int r_range = getMaxColumnValue(image, flattened_img_array, 0) - getMinColumnValue(image, flattened_img_array, 0);
+        int g_range = getMaxColumnValue(image, flattened_img_array, 1) - getMinColumnValue(image, flattened_img_array, 1);
+        int b_range = getMaxColumnValue(image, flattened_img_array, 2) - getMinColumnValue(image, flattened_img_array, 2);
+
+        int space_with_highest_range = 0;
+
+        if (g_range >= r_range && g_range >= b_range)
+            space_with_highest_range = 1;
+        else if(b_range >= r_range && b_range >= g_range)
+            space_with_highest_range = 2;
+        else if (r_range >= b_range && r_range >= g_range)
+            space_with_highest_range = 0;
+
+
+        int finalSpace_with_highest_range = space_with_highest_range;
+        Arrays.sort(flattened_img_array, Comparator.comparingInt(o -> o[finalSpace_with_highest_range]));
+
+        int median_index = (flattened_img_array.length + 1) / 2;
+
+        splitIntoBuckets(image, output, Arrays.copyOfRange(flattened_img_array, 0, median_index), depth-1);
+        splitIntoBuckets(image, output, Arrays.copyOfRange(flattened_img_array, median_index, flattened_img_array.length), depth-1);
+
+    }
+
+    private static int getMaxColumnValue(BufferedImage image, int[][] array, int column) {
+        int max = Integer.MIN_VALUE;
+
+        for(int i = 0; i < array.length; i++) {
+            max = Math.max(max, array[i][column]);
+        }
+
+        return max;
+    }
+
+    private static int getMinColumnValue(BufferedImage image, int[][] array, int column) {
+        int min = Integer.MAX_VALUE;
+
+        for(int i = 0; i < array.length; i++) {
+            min = Math.min(min, array[i][column]);
+        }
+
+        return min;
+    }
+
+    private static int getAvgColumnValue(int[][] array, int column) {
+        int avg = 0;
+
+        for(int i = 0; i < array.length; i++) {
+            avg += array[i][column];
+        }
+
+        return avg / array.length;
+    }
+
+
+    private static void medianCutQuantize(BufferedImage image, BufferedImage output, int[][] array) {
+        int r_avg = getAvgColumnValue(array, 0);
+        int g_avg = getAvgColumnValue(array, 1);
+        int b_avg = getAvgColumnValue(array, 2);
+
+        for (int i = 0; i < array.length; i++) {
+            Color color = new Color(r_avg, g_avg, b_avg);
+            output.setRGB(array[i][3], array[i][4], color.getRGB());
+        }
+
+    }
 
     // Method 3
 }
