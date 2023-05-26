@@ -17,7 +17,7 @@ public class ProcessedImage {
         this.colorPalette = colorPalette;
     }
 
-    public Image getImage() {
+    public BufferedImage getImage() {
         return image;
     }
 
