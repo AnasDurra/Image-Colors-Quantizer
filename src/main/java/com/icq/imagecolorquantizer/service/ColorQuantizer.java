@@ -89,7 +89,6 @@ public class ColorQuantizer {
             ImageIO.write(quantizedImage, imageExtension, outputFile);
             System.out.println("Quantized image saved successfully.");
         } catch (Exception e) {
-        } catch (Exception e) {
             System.out.println("image not found");
             e.printStackTrace();
         }
@@ -198,6 +197,8 @@ public class ColorQuantizer {
         return createIndexedImage(bufferedImage
                 .getScaledInstance(inputImage.getWidth(null), inputImage.getHeight(null), Image.SCALE_DEFAULT), centroids, 8);
     }
+
+    // Method 3
     public static ProcessedImage medianCut(String inputPath, int depth) throws IOException {
         BufferedImage image = ImageIO.read(new File(inputPath));
         BufferedImage output = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
@@ -297,6 +298,4 @@ public class ColorQuantizer {
         }
 
     }
-
-    // Method 3
 }
