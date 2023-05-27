@@ -14,6 +14,7 @@ import java.util.Set;
 import java.io.IOException;
 import java.util.*;
 
+
 public class ColorQuantizer {
 
     // Method 1 ,
@@ -90,7 +91,7 @@ public class ColorQuantizer {
             e.printStackTrace();
         }
         if (quantizedImage != null) {
-            return new ProcessedImage(quantizedImage, extractColorPalette(quantizedImage));
+            return new ProcessedImage(quantizedImage, UTIL.extractColorPalette(quantizedImage));
         } else {
             return null;
         }
@@ -98,49 +99,31 @@ public class ColorQuantizer {
 
     // Extract Color Palette
     // Input image , the result of uniform_quantization method
-    public static Set<Color> extractColorPalette(BufferedImage image) {
-        // Get the dimensions of the image
-        int width = image.getWidth();
-        int height = image.getHeight();
-
-        Set<Color> colorPalette = new HashSet<>();
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                // Get the color at the current pixel
-                int rgb = image.getRGB(x, y);
-                Color color = new Color(rgb);
-                colorPalette.add(color);
-            }
-        }
-        return colorPalette;
-    }
 
     // Method 2
-    public static Image kMeans(Image inputImage, int numClusters) throws IOException {
+    public static ProcessedImage kMeans(BufferedImage inputImage, int numClusters) throws IOException {
         // Convert the input image to a BufferedImage object
-        BufferedImage bufferedImage = new BufferedImage(inputImage.getWidth(null), inputImage.getHeight(null), BufferedImage.TYPE_INT_RGB);
-        bufferedImage.getGraphics().drawImage(inputImage, 0, 0, null);
 
         // Initialize the centroids randomly
         Color[] centroids = new Color[numClusters];
         for (int i = 0; i < numClusters; i++) {
-            int x = (int) (Math.random() * bufferedImage.getWidth());
-            int y = (int) (Math.random() * bufferedImage.getHeight());
-            centroids[i] = new Color(bufferedImage.getRGB(x, y));
+            int x = (int) (Math.random() * inputImage.getWidth());
+            int y = (int) (Math.random() * inputImage.getHeight());
+            centroids[i] = new Color(inputImage.getRGB(x, y));
         }
 
         // Iterate until convergence
         boolean converged = false;
         while (!converged) {
             // Assign each pixel to the nearest centroid
-            int[][] assignments = new int[bufferedImage.getWidth()][bufferedImage.getHeight()];
-            for (int x = 0; x < bufferedImage.getWidth(); x++) {
-                for (int y = 0; y < bufferedImage.getHeight(); y++) {
-                    Color pixel = new Color(bufferedImage.getRGB(x, y));
+            int[][] assignments = new int[inputImage.getWidth()][inputImage.getHeight()];
+            for (int x = 0; x < inputImage.getWidth(); x++) {
+                for (int y = 0; y < inputImage.getHeight(); y++) {
+                    Color pixel = new Color(inputImage.getRGB(x, y));
                     int bestCluster = 0;
                     double bestDistance = Double.MAX_VALUE;
                     for (int i = 0; i < numClusters; i++) {
-                        double distance = getDistance(pixel, centroids[i]);
+                        double distance =UTIL.getColorDistance(pixel, centroids[i]);
                         if (distance < bestDistance) {
                             bestCluster = i;
                             bestDistance = distance;
@@ -149,13 +132,12 @@ public class ColorQuantizer {
                     assignments[x][y] = bestCluster;
                 }
             }
-
             // Update the centroids
             int[] counts = new int[numClusters];
             int[][] sums = new int[numClusters][3];
-            for (int x = 0; x < bufferedImage.getWidth(); x++) {
-                for (int y = 0; y < bufferedImage.getHeight(); y++) {
-                    Color pixel = new Color(bufferedImage.getRGB(x, y));
+            for (int x = 0; x < inputImage.getWidth(); x++) {
+                for (int y = 0; y < inputImage.getHeight(); y++) {
+                    Color pixel = new Color(inputImage.getRGB(x, y));
                     int cluster = assignments[x][y];
                     counts[cluster]++;
                     sums[cluster][0] += pixel.getRed();
@@ -179,24 +161,23 @@ public class ColorQuantizer {
         }
 
         // Replace each pixel with the nearest centroid
-        for (int x = 0; x < bufferedImage.getWidth(); x++) {
-            for (int y = 0; y < bufferedImage.getHeight(); y++) {
-                Color pixel = new Color(bufferedImage.getRGB(x, y));
+        for (int x = 0; x < inputImage.getWidth(); x++) {
+            for (int y = 0; y < inputImage.getHeight(); y++) {
+                Color pixel = new Color(inputImage.getRGB(x, y));
                 int bestCluster = 0;
                 double bestDistance = Double.MAX_VALUE;
                 for (int i = 0; i < numClusters; i++) {
-                    double distance = getDistance(pixel, centroids[i]);
+                    double distance = UTIL.getColorDistance(pixel, centroids[i]);
                     if (distance < bestDistance) {
                         bestCluster = i;
                         bestDistance = distance;
                     }
                 }
-                bufferedImage.setRGB(x, y, centroids[bestCluster].getRGB());
+                inputImage.setRGB(x, y, centroids[bestCluster].getRGB());
             }
         }
-        // Convert the BufferedImage object back to an Image object then into indexed image
-        return createIndexedImage(bufferedImage
-                .getScaledInstance(inputImage.getWidth(null), inputImage.getHeight(null), Image.SCALE_DEFAULT), centroids, 8);
+        BufferedImage indexedImage = UTIL.createIndexedImage(inputImage,centroids,numClusters);
+        return new ProcessedImage(indexedImage,UTIL.extractColorPalette(indexedImage));
     }
 
     // Method 3
@@ -222,7 +203,7 @@ public class ColorQuantizer {
 
         splitIntoBuckets(image, output, flattened_img_array, depth);
 
-        return new ProcessedImage(output, extractColorPalette(output));
+        return new ProcessedImage(output, UTIL.extractColorPalette(output));
     }
 
     private static void splitIntoBuckets(BufferedImage image, BufferedImage output, int[][] flattened_img_array, int depth) {
