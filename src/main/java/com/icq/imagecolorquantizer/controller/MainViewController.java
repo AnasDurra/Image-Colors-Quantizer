@@ -1,5 +1,7 @@
 package com.icq.imagecolorquantizer.controller;
 
+import com.icq.imagecolorquantizer.service.ColorQuantizer;
+import com.icq.imagecolorquantizer.utils.ImageUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
@@ -11,10 +13,12 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 
 public class MainViewController {
@@ -39,6 +43,15 @@ public class MainViewController {
     @FXML
     private ComboBox<String> imageQuantizationAlgorithmComboBox;
 
+    @FXML
+    private Text originalImageSizeTextView;
+
+    @FXML
+    private Text originalImageNumOfColorsTextView;
+
+    @FXML
+    private Text quantizedImageSizeTextView;
+
 
     // selected algorithm
     private String selectedAlgorithm;
@@ -52,7 +65,7 @@ public class MainViewController {
 
         // add items to imageQuantizationAlgorithmComboBox
         imageQuantizationAlgorithmComboBox.getItems().addAll(
-                "K-Means",
+                "Uniform",
                 "Median Cut",
                 "Octree"
         );
@@ -83,10 +96,6 @@ public class MainViewController {
     private void openZoomedInStage(Image image) {
         Stage zoomedInStage = new Stage();
         ImageView zoomedInView = new ImageView();
-
-        // set stage height to fit the screen height
-//        zoomedInStage.setHeight(500);
-//        zoomedInStage.setWidth(800);
 
         zoomedInStage.setScene(new Scene(new Pane(zoomedInView)));
         zoomedInStage.setTitle("Zoomed In Image");
@@ -125,6 +134,12 @@ public class MainViewController {
             // set image to original image view
             originalImageView.setImage(image);
 
+            // center the image inside the image view
+            ImageUtils.centerImage(originalImageView);
+
+            // set original image size
+            originalImageSizeTextView.setText("Size (KB): " + (int) (new File(imagePath).length() / 1024));
+
             // make the image centered in the imageView
             originalImageView.setPreserveRatio(true);
 
@@ -142,16 +157,19 @@ public class MainViewController {
             String imagePath = imageFilePath.getText();
 
             // create image object
-            Image image = new Image("file:" + imagePath);
+            Image image;
 
             // TODO: quantize image
-//            quantizeImage(imagePath, selectedAlgorithm);
+            image = ImageUtils.convertBufferedImageToJavaFXImage(quantizeImage(imagePath));
 
             // set image to quantized image view
             quantizedImageView.setImage(image);
 
             // make the image centered in the imageView
             quantizedImageView.setPreserveRatio(true);
+
+            // center the image inside the image view
+            ImageUtils.centerImage(quantizedImageView);
 
         } else {
             // show alert
@@ -162,6 +180,9 @@ public class MainViewController {
     }
 
 
+    private BufferedImage quantizeImage(String imagePath) {
+        return ColorQuantizer.uniformQuantization(imagePath, 16);
+    }
     /**
      * Choose file from file system
      * and return the path of the file
