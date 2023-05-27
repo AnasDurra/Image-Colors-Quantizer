@@ -11,12 +11,12 @@ public class ColorQuantizer {
     // Method 1 ,
     // Input imageName , name of the image in path => src/imageName,
     // And k => Number of possible colors in the result = k^3
-    static BufferedImage uniform_quantization(String imageName, int k){  // Number of possible colors in the result = k^3
+    public static BufferedImage uniformQuantization(String imageName, int k){  // Number of possible colors in the result = k^3
         BufferedImage image;
         BufferedImage quantizedImage = null;
         try {
             // Load the image file
-            File imageFile = new File("src/" + imageName);
+            File imageFile = new File( imageName);
             image = ImageIO.read(imageFile);
             // Extract the file extension from the file path
             String imageExtension = imageFile.getPath().substring(imageFile.getPath().lastIndexOf(".") + 1);
@@ -73,13 +73,6 @@ public class ColorQuantizer {
                 }
             }
 
-            // Define the file path and name for saving the quantized image
-            String outputPath = "src/("+imageName+")_Quantized"+new Date().getTime()+"."+imageExtension;
-
-            // Save the quantized image
-            File outputFile = new File(outputPath);
-            ImageIO.write(quantizedImage, imageExtension, outputFile);
-            System.out.println("Quantized image saved successfully.");
         }catch (Exception e) {
             System.out.println("image not found");
             e.printStackTrace();
