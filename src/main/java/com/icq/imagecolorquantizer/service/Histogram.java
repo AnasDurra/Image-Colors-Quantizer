@@ -1,11 +1,9 @@
+package com.icq.imagecolorquantizer.service;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
@@ -97,7 +95,7 @@ public class Histogram {
 
     public void display() {
         JFrame f = new JFrame("Histogram");
-        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         f.add(createChartPanel());
         f.add(createControlPanel(), BorderLayout.SOUTH);
         f.add(new JLabel(new ImageIcon(image)), BorderLayout.WEST);

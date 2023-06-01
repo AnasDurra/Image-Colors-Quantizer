@@ -21,6 +21,7 @@ public class ProcessedImage {
         return image;
     }
 
+
     public Set<Color> getColorPalette() {
         return colorPalette;
     }
@@ -32,14 +33,15 @@ public class ProcessedImage {
     //writing the image to a temp folder to get the specific size and then delete the image
     //TODO change the path in your device
     public float getImageSize() throws IOException {
-        String path = "C:\\Users\\ASUS\\Desktop\\multimedia\\temp\\saveTemp.tiff";
+
+        String path = "C:\\Users\\Sham\\IdeaProjects\\image-colors-quantizer\\temp\\temp.tiff";
         File output = new File(path);
         ImageIO.write((RenderedImage) image, "tiff", output);
 
-        float size = output.length();
-
+        // Get file size in kilobytes
+        long fileSize = output.length() / 1024;
         output.delete();
+        return fileSize;
 
-        return size;
     }
 }

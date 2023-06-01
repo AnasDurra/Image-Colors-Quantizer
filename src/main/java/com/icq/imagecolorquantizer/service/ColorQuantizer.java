@@ -7,9 +7,6 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 
 import java.io.IOException;
 import java.util.*;
@@ -20,7 +17,7 @@ public class ColorQuantizer {
     // Method 1 ,
     // Input imageName , name of the image in path => src/imageName,
     // And k => Number of possible colors in the result = k^3
-    static ProcessedImage uniformQuantization(String imagePath, int k){
+    public static ProcessedImage uniformQuantization(String imagePath, int k){
         BufferedImage image = null;
         BufferedImage quantizedImage = null;
         try {
@@ -177,7 +174,7 @@ public class ColorQuantizer {
             }
         }
         BufferedImage indexedImage = UTIL.createIndexedImage(inputImage,centroids,numClusters);
-        return new ProcessedImage(indexedImage,UTIL.extractColorPalette(indexedImage));
+        return new ProcessedImage(inputImage,UTIL.extractColorPalette(indexedImage));
     }
 
     // Method 3

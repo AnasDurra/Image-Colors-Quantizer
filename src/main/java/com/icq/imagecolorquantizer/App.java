@@ -16,13 +16,12 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-
         // create root node
         FXMLLoader loader = new FXMLLoader(getClass().getResource("main-view.fxml"));
         Parent root = loader.load();
 
         // create scene
-        Scene scene = new Scene(root,890,570, Color.WHITE);
+        Scene scene = new Scene(root, 890, 570, Color.WHITE);
 
         // set title of stage
         stage.setTitle("Image Color Quantizer");

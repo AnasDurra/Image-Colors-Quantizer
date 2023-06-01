@@ -5,7 +5,10 @@ import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
 public class ImageUtils {
 
@@ -46,6 +49,16 @@ public class ImageUtils {
             imageView.setX((imageView.getFitWidth() - w) / 2);
             imageView.setY((imageView.getFitHeight() - h) / 2);
 
+        }
+    }
+
+    public static BufferedImage convertStringToBufferedImage(String imagePath) {
+        try {
+            File file = new File(imagePath);
+            return ImageIO.read(file);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 
