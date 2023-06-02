@@ -21,7 +21,7 @@ public class App extends Application {
         Parent root = loader.load();
 
         // create scene
-        Scene scene = new Scene(root, 890, 570, Color.WHITE);
+        Scene scene = new Scene(root, Color.WHITE);
 
         // set title of stage
         stage.setTitle("Image Color Quantizer");

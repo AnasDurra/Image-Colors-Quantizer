@@ -1,15 +1,5 @@
 package com.icq.imagecolorquantizer.service;
 
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.image.BufferedImage;
-import java.awt.image.Raster;
-import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
-import javax.swing.JCheckBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -19,6 +9,12 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.StandardXYBarPainter;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.data.statistics.HistogramDataset;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.image.BufferedImage;
+import java.awt.image.Raster;
 
 public class Histogram {
 
@@ -47,6 +43,12 @@ public class Histogram {
         // chart
         JFreeChart chart = ChartFactory.createHistogram("Histogram", "Value",
                 "Count", dataset, PlotOrientation.VERTICAL, true, true, false);
+
+        // set axis ranges
+//        chart.getXYPlot().getDomainAxis().setRange(0.0, 255.0);
+//        chart.getXYPlot().getRangeAxis().setRange(0.0, 1000.0);
+
+
         XYPlot plot = (XYPlot) chart.getPlot();
         renderer = (XYBarRenderer) plot.getRenderer();
         renderer.setBarPainter(new StandardXYBarPainter());
@@ -95,10 +97,13 @@ public class Histogram {
 
     public void display() {
         JFrame f = new JFrame("Histogram");
-//        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        // set size of the frame
+        f.setSize(600, 400);
+
         f.add(createChartPanel());
         f.add(createControlPanel(), BorderLayout.SOUTH);
-        f.add(new JLabel(new ImageIcon(image)), BorderLayout.WEST);
+//        f.add(new JLabel(new ImageIcon(image)), BorderLayout.WEST);
         f.pack();
         f.setLocationRelativeTo(null);
         f.setVisible(true);

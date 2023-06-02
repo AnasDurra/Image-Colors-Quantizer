@@ -52,7 +52,7 @@ public class ImageUtils {
         }
     }
 
-    public static BufferedImage convertStringToBufferedImage(String imagePath) {
+    public static BufferedImage loadImageFromPath(String imagePath) {
         try {
             File file = new File(imagePath);
             return ImageIO.read(file);

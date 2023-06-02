@@ -10,21 +10,22 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 
-import javafx.scene.shape.Rectangle;
-
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -40,6 +41,7 @@ public class MainViewController {
     private ProcessedImage originalImage;
 
     private ProcessedImage histogram;
+
     @FXML
     private Button selectImageButton;
 
@@ -86,7 +88,7 @@ public class MainViewController {
     private Button quantizedHistogram;
 
     @FXML
-    private Button originalColorPalette;
+    private Button saveImageBtn;
 
     @FXML
     private Button originalHistogram;
@@ -105,7 +107,6 @@ public class MainViewController {
         valueTextField.setDisable(true);
         quantizedColorPalette.setDisable(true);
         quantizedHistogram.setDisable(true);
-        originalColorPalette.setDisable(true);
         originalHistogram.setDisable(true);
 
         // add items to imageQuantizationAlgorithmComboBox
@@ -135,8 +136,7 @@ public class MainViewController {
                 // disable quantize button
                 quantizeButton.setDisable(true);
 
-                if (valueTextField.getText().isEmpty())
-                    return;
+                if (valueTextField.getText().isEmpty()) return;
 
                 //show alert
                 Platform.runLater(() -> {
@@ -195,7 +195,7 @@ public class MainViewController {
         // if image path is not null
         if (imagePath != null) {
             // assign original image to originalImage
-            BufferedImage convertedImage = ImageUtils.convertStringToBufferedImage(imagePath);
+            BufferedImage convertedImage = ImageUtils.loadImageFromPath(imagePath);
             assert convertedImage != null;
             originalImage = new ProcessedImage(convertedImage, UTIL.extractColorPalette(convertedImage));
 
@@ -211,13 +211,13 @@ public class MainViewController {
             // set image to original image view
             originalImageView.setImage(image);
 
-            BufferedImage originalBufferedImage = ImageUtils.convertStringToBufferedImage(imagePath);
+            BufferedImage originalBufferedImage = ImageUtils.loadImageFromPath(imagePath);
             processedImage = new ProcessedImage(originalBufferedImage, UTIL.extractColorPalette(Objects.requireNonNull(originalBufferedImage)));
             // center the image inside the image view
             ImageUtils.centerImage(originalImageView);
 
             // set original image size
-            originalImageSizeTextView.setText("Size (KB): " + (int) (new File(imagePath).length() / 1024));
+            originalImageSizeTextView.setText("Size (KB): " + processedImage.getImageSize());
 
             //set original image num of color
             originalImageNumOfColorsTextView.setText("Num of color: " + processedImage.getNumberOfColors());
@@ -226,7 +226,6 @@ public class MainViewController {
             originalImageView.setPreserveRatio(true);
 
             //enable originalColorPalette & originalHistogram
-            originalColorPalette.setDisable(false);
             originalHistogram.setDisable(false);
 
         }
@@ -245,36 +244,64 @@ public class MainViewController {
             // create image object
             Image image;
 
+            // load the image and store it in a buffered image
+            BufferedImage originalBufferedImage = ImageUtils.loadImageFromPath(imagePath);
+
+
             switch (selectedAlgorithm) {
 
                 case "Uniform" -> {
-                    image = ImageUtils.convertBufferedImageToJavaFXImage(uniformQuantizeImage(imagePath, textValue));
-                    processedImage = ColorQuantizer.uniformQuantization(imagePath, textValue);
+
+                    // quantize the image
+                    processedImage = ColorQuantizer.uniformQuantization(originalBufferedImage, textValue);
+
+                    // assign the quantized image to the image object
+                    image = ImageUtils.convertBufferedImageToJavaFXImage(Objects.requireNonNull(processedImage).image());
+
+                    // set the quantized image to the quantized image view
                     quantizedImageView.setImage(image);
-                    quantizedImageSizeTextView.setText("Size (KB): " + Objects.requireNonNull(processedImage).getImageSize());
-                    quantizedImageNumOfColorsTextView.setText("Num of color: " + Objects.requireNonNull(processedImage).getNumberOfColors());
+
+                    // update the quantized image size text view
+                    quantizedImageSizeTextView.setText("Size (KB): " + processedImage.getImageSize());
+
+                    // update the quantized image number of colors text view
+                    quantizedImageNumOfColorsTextView.setText("Num of colors: " + processedImage.getNumberOfColors());
                 }
                 case "k Means" -> {
-                    image = ImageUtils.convertBufferedImageToJavaFXImage(KMeansQuantizeImage(ImageUtils.convertStringToBufferedImage(imagePath), textValue));
-                    processedImage = ColorQuantizer.kMeans(ImageUtils.convertStringToBufferedImage(imagePath), textValue);
+
+                    // apply k means quantization
+                    processedImage = ColorQuantizer.kMeans(originalBufferedImage, textValue);
+
+                    // assign the quantized image to the image object
+                    image = ImageUtils.convertBufferedImageToJavaFXImage(processedImage.image());
+
+                    // set the quantized image to the quantized image view
                     quantizedImageView.setImage(image);
-//                    quantizedImageSizeTextView.setText("Size (KB): " + Objects.requireNonNull(processedImage).getImageSize());
-                    quantizedImageNumOfColorsTextView.setText("Num of color: " + Objects.requireNonNull(processedImage).getNumberOfColors());
+
+                    // update the quantized image size text view
+                    quantizedImageSizeTextView.setText("Size (KB): " + processedImage.getImageSize());
+
+                    // update the quantized image number of colors text view
+                    quantizedImageNumOfColorsTextView.setText("Num of colors: " + processedImage.getNumberOfColors());
                 }
                 case "Median Cut" -> {
-                    image = ImageUtils.convertBufferedImageToJavaFXImage(medianCutQuantizeImage(imagePath, textValue));
+
+                    // apply median cut quantization
+                    processedImage = ColorQuantizer.medianCut(Objects.requireNonNull(originalBufferedImage), textValue);
+
+                    // assign the quantized image to the image object
+                    image = ImageUtils.convertBufferedImageToJavaFXImage(processedImage.image());
+
+                    // set the quantized image to the quantized image view
                     quantizedImageView.setImage(image);
-//                    quantizedImageSizeTextView.setText("Size (KB): " + Objects.requireNonNull(ColorQuantizer.medianCut(imagePath, textValue)).getImageSize());
-                    quantizedImageNumOfColorsTextView.setText("Num of color: " + Objects.requireNonNull(ColorQuantizer.medianCut(imagePath, textValue)).getNumberOfColors());
-                    processedImage = ColorQuantizer.medianCut(imagePath, textValue);
+
+                    // update the quantized image size text view
+                    quantizedImageSizeTextView.setText("Size (KB): " + processedImage.getImageSize());
+
+                    // update the quantized image number of colors text view
+                    quantizedImageNumOfColorsTextView.setText("Num of colors: " + processedImage.getNumberOfColors());
                 }
             }
-
-
-            // TODO: quantize image
-
-            // set image to quantized image view
-//            quantizedImageView.setImage(image);
 
             // make the image centered in the imageView
             quantizedImageView.setPreserveRatio(true);
@@ -285,6 +312,7 @@ public class MainViewController {
             //enable show color palette & show histogram for quantized image
             quantizedColorPalette.setDisable(false);
             quantizedHistogram.setDisable(false);
+            saveImageBtn.setDisable(false);
 
         } else {
             // show alert
@@ -292,19 +320,6 @@ public class MainViewController {
             alert.setTitle("Information Dialog");
             alert.setHeaderText("Please Select a Quantization Algorithm");
         }
-    }
-
-
-    private BufferedImage uniformQuantizeImage(String imagePath, int value) {
-        return ColorQuantizer.uniformQuantization(imagePath, value).getImage();
-    }
-
-    private BufferedImage medianCutQuantizeImage(String inputPath, int depth) throws IOException {
-        return ColorQuantizer.medianCut(inputPath, depth).getImage();
-    }
-
-    private BufferedImage KMeansQuantizeImage(BufferedImage inputPath, int depth) throws IOException {
-        return ColorQuantizer.kMeans(inputPath, depth).getImage();
     }
 
     /**
@@ -333,7 +348,6 @@ public class MainViewController {
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
                 alert.setTitle("Information Dialog");
                 alert.setHeaderText("Please Select a File");
-//            alert.setContentText("You didn't select a file!");
                 alert.showAndWait();
             }
         }
@@ -361,7 +375,9 @@ public class MainViewController {
         GridPane gridPane = new GridPane();
         gridPane.setHgap(1);
         gridPane.setVgap(1);
-//        gridPane.setPadding(new Insets(10, 10, 10, 10));
+
+        // add padding to the grid pane
+        gridPane.setPadding(new javafx.geometry.Insets(10, 10, 10, 10));
 
         int rowIndex = 0;
         int colIndex = 0;
@@ -384,13 +400,8 @@ public class MainViewController {
     }
 
     public void displayColorPalette(ActionEvent event) throws IOException {
-        colorPalette(processedImage.getColorPalette());
+        colorPalette(processedImage.colorPalette());
     }
-
-    public void displayOriginalColorPalette(ActionEvent event) throws IOException {
-        colorPalette(originalImage.getColorPalette());
-    }
-
 
     /**
      * Histogram action event handler
@@ -401,12 +412,53 @@ public class MainViewController {
         histogram.display();
     }
 
-    public void displayQuantizedHistogram(ActionEvent event) throws IOException {
-        histogram(processedImage.getImage());
+    public void displayQuantizedHistogram(ActionEvent event) {
+        histogram(processedImage.image());
     }
 
-    public void displayOriginalHistogram(ActionEvent event) throws IOException {
-        histogram(originalImage.getImage());
+    public void displayOriginalHistogram(ActionEvent event) {
+        histogram(originalImage.image());
     }
+
+
+    /**
+     * TODO: Save quantized image action event handler..
+     * onClick, app will open a file chooser dialog
+     * to let the user choose the path to save the quantized image
+     * then, app will save the quantized image to the selected path
+     */
+    @FXML
+    public void saveQuantizedImageAction(ActionEvent event) {
+
+        // open file chooser dialog
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save Image");
+        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Image Files", "*.png", "*.gif"));
+
+        // set default name for the new image
+        fileChooser.setInitialFileName("quantizedImage.png");
+        File file = fileChooser.showSaveDialog(new Stage());
+
+        // save the quantized image to the selected path
+        try {
+            // convert the image to indexed image
+            // generate the color palette and convert it to array of color
+
+            Color[] colorPalette = processedImage.colorPalette().toArray(new Color[0]);
+
+//            BufferedImage indexedImage = UTIL.createIndexedImage(processedImage.image(), colorPalette, colorPalette.length);
+            ImageIO.write(processedImage.image(), "png", file);
+        } catch (IOException e) {
+            e.printStackTrace();
+
+            // show alert
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Information Dialog");
+            alert.setHeaderText("Select a path to save the quantized image");
+            alert.showAndWait();
+
+        }
+    }
+
 }
 

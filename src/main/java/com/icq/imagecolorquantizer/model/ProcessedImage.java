@@ -1,47 +1,32 @@
 package com.icq.imagecolorquantizer.model;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
-import java.io.File;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Set;
 
-public class ProcessedImage {
-    private final BufferedImage image;
-    private final Set<Color> colorPalette;
-
-    public ProcessedImage(BufferedImage image, Set<Color> colorPalette) {
-        this.image = image;
-        this.colorPalette = colorPalette;
-    }
-
-    public BufferedImage getImage() {
-        return image;
-    }
-
-
-    public Set<Color> getColorPalette() {
-        return colorPalette;
-    }
+public record ProcessedImage(BufferedImage image, Set<Color> colorPalette) {
 
     public int getNumberOfColors() {
         return colorPalette.size();
     }
 
-    //writing the image to a temp folder to get the specific size and then delete the image
-    //TODO change the path in your device
-    public float getImageSize() throws IOException {
-
-        String path = "C:\\Users\\Sham\\IdeaProjects\\image-colors-quantizer\\temp\\temp.tiff";
-        File output = new File(path);
-        ImageIO.write((RenderedImage) image, "tiff", output);
-
-        // Get file size in kilobytes
-        long fileSize = output.length() / 1024;
-        output.delete();
-        return fileSize;
-
+    /**
+     * TODO: implement this method
+     *  a method that takes the buffered image,
+     *  and return it's size in kilobytes
+     */
+    public int getImageSize() {
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            javax.imageio.ImageIO.write(image, "png", baos);
+            byte[] imageData = baos.toByteArray();
+            int imageSizeInBytes = imageData.length;
+            return imageSizeInBytes / 1024;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return -1;  // Return -1 if there was an error
     }
 }
