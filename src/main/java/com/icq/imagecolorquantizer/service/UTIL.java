@@ -36,7 +36,6 @@ public class UTIL {
     public static BufferedImage createIndexedImage(BufferedImage image) {
        Set<Color> quantizedColors = extractColorPalette(image);
         // Create a new IndexColorModel with the colors from the quantized image
-        System.out.println(quantizedColors.size());
         byte[] reds = new byte[quantizedColors.size()];
         byte[] greens = new byte[quantizedColors.size()];
         byte[] blues = new byte[quantizedColors.size()];
@@ -55,7 +54,6 @@ public class UTIL {
 
         // Draw the original image onto the new indexed image
         indexedImage.getGraphics().drawImage(image, 0, 0, null);
-System.out.println(extractColorPalette(indexedImage).size());
         return indexedImage;
     }
 }
