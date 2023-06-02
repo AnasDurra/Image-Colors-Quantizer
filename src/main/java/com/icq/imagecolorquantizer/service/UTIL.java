@@ -16,7 +16,7 @@ public class UTIL {
         return Math.sqrt(rDiff * rDiff + gDiff * gDiff + bDiff * bDiff);
     }
 
-    public static Set<Color> extractColorPalette(BufferedImage image){
+    public static Set<Color> extractColorPalette(BufferedImage image) {
         // Get the dimensions of the image
         int width = image.getWidth();
         int height = image.getHeight();
@@ -33,35 +33,29 @@ public class UTIL {
         return colorPalette;
     }
 
-    public static BufferedImage createIndexedImage(BufferedImage inputImage, Color[] quantizedColors, int numColors) {
-        // Create a new BufferedImage object with the same dimensions as the input image
-
-        // Draw the input image onto the BufferedImage object
-        Graphics2D g2d = inputImage.createGraphics();
-        g2d.drawImage(inputImage, 0, 0, null);
-        g2d.dispose();
-
-        // Convert the Color array to an int array
-        int[] quantizedColorsInt = new int[numColors];
-        for (int i = 0; i < numColors; i++) {
-            quantizedColorsInt[i] = quantizedColors[i].getRGB();
+    public static BufferedImage createIndexedImage(BufferedImage image) {
+       Set<Color> quantizedColors = extractColorPalette(image);
+        // Create a new IndexColorModel with the colors from the quantized image
+        System.out.println(quantizedColors.size());
+        byte[] reds = new byte[quantizedColors.size()];
+        byte[] greens = new byte[quantizedColors.size()];
+        byte[] blues = new byte[quantizedColors.size()];
+        int idx = 0;
+        for (Color i : quantizedColors) {
+            int color = i.getRGB();
+            reds[idx] = (byte) ((color >> 16) & 0xFF);
+            greens[idx] = (byte) ((color >> 8) & 0xFF);
+            blues[idx] = (byte) (color & 0xFF);
+            idx++;
         }
+        IndexColorModel colorModel = new IndexColorModel(8,quantizedColors.size(), reds, greens, blues);
 
-        // Create a new IndexColorModel object with the quantized colors
-        IndexColorModel colorModel = new IndexColorModel(8, numColors, quantizedColorsInt, 0, false, -1, DataBuffer.TYPE_BYTE);
+        // Create a new BufferedImage with the same dimensions as the original image, but with the TYPE_BYTE_INDEXED image type and the new IndexColorModel
+        BufferedImage indexedImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_BYTE_INDEXED, colorModel);
 
-        // Create a new BufferedImage object with the specified colormodel
-        BufferedImage outputImage = new BufferedImage(inputImage.getWidth(), inputImage.getHeight(), BufferedImage.TYPE_BYTE_INDEXED, colorModel);
-
-        // Copy the pixel data from the input image to the output image
-        outputImage.getGraphics().drawImage(inputImage, 0, 0, null);
-
-//        // Print the colors in the indexed image
-//        for (int i = 0; i < numColors; i++) {
-//            int color = colorModel.getRGB(i);
-//            System.out.printf("Color %d: R=%d, G=%d, B=%d\n", i, (color >> 16)& 0xFF, (color >> 8) & 0xFF, color & 0xFF);
-//        }
-
-        return outputImage;
+        // Draw the original image onto the new indexed image
+        indexedImage.getGraphics().drawImage(image, 0, 0, null);
+System.out.println(extractColorPalette(indexedImage).size());
+        return indexedImage;
     }
 }

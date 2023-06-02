@@ -446,8 +446,8 @@ public class MainViewController {
 
             Color[] colorPalette = processedImage.colorPalette().toArray(new Color[0]);
 
-//            BufferedImage indexedImage = UTIL.createIndexedImage(processedImage.image(), colorPalette, colorPalette.length);
-            ImageIO.write(processedImage.image(), "png", file);
+            BufferedImage indexedImage = UTIL.createIndexedImage(processedImage.image());
+            ImageIO.write(indexedImage, "gif", file);
         } catch (IOException e) {
             e.printStackTrace();
 

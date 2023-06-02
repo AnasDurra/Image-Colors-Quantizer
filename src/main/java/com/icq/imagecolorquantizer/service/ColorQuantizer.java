@@ -147,8 +147,8 @@ public class ColorQuantizer {
                 inputImage.setRGB(x, y, centroids[bestCluster].getRGB());
             }
         }
-        BufferedImage indexedImage = UTIL.createIndexedImage(inputImage, centroids, numClusters);
-        return new ProcessedImage(inputImage, UTIL.extractColorPalette(indexedImage));
+        //BufferedImage indexedImage = UTIL.createIndexedImage(inputImage, centroids, numClusters);
+        return new ProcessedImage(inputImage, UTIL.extractColorPalette(inputImage));
     }
 
     // Method 3
