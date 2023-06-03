@@ -30,8 +30,11 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class MainViewController {
 
@@ -381,6 +384,16 @@ public class MainViewController {
 
         int rowIndex = 0;
         int colIndex = 0;
+
+        // sort colors
+        colors = colors
+                .stream()
+                .sorted(Comparator
+                        .comparingInt(Color::getRed)
+                        .thenComparingInt(Color::getGreen)
+                        .thenComparingInt(Color::getBlue))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
         for (Color color : colors) {
             javafx.scene.paint.Color convertedColor = ColorUtils.convertColorToPaint(color);
             Rectangle rectangle = new Rectangle(RECTANGLE_SIZE, RECTANGLE_SIZE, convertedColor);
@@ -438,6 +451,10 @@ public class MainViewController {
         // set default name for the new image
         fileChooser.setInitialFileName("quantizedImage.png");
         File file = fileChooser.showSaveDialog(new Stage());
+
+        if (file == null) {
+            return;
+        }
 
         // save the quantized image to the selected path
         try {

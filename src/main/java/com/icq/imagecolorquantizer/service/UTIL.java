@@ -2,7 +2,6 @@ package com.icq.imagecolorquantizer.service;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBuffer;
 import java.awt.image.IndexColorModel;
 import java.util.HashSet;
 import java.util.Set;
@@ -34,7 +33,7 @@ public class UTIL {
     }
 
     public static BufferedImage createIndexedImage(BufferedImage image) {
-       Set<Color> quantizedColors = extractColorPalette(image);
+        Set<Color> quantizedColors = extractColorPalette(image);
         // Create a new IndexColorModel with the colors from the quantized image
         byte[] reds = new byte[quantizedColors.size()];
         byte[] greens = new byte[quantizedColors.size()];
@@ -47,7 +46,7 @@ public class UTIL {
             blues[idx] = (byte) (color & 0xFF);
             idx++;
         }
-        IndexColorModel colorModel = new IndexColorModel(8,quantizedColors.size(), reds, greens, blues);
+        IndexColorModel colorModel = new IndexColorModel(8, quantizedColors.size(), reds, greens, blues);
 
         // Create a new BufferedImage with the same dimensions as the original image, but with the TYPE_BYTE_INDEXED image type and the new IndexColorModel
         BufferedImage indexedImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_BYTE_INDEXED, colorModel);
