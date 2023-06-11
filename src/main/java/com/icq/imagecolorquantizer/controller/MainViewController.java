@@ -43,11 +43,6 @@ public class MainViewController {
 
     private ProcessedImage originalImage;
 
-    private ProcessedImage histogram;
-
-    @FXML
-    private Button selectImageButton;
-
     @FXML
     private TextField imageFilePath;
 

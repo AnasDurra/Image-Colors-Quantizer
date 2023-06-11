@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane prefHeight="450.0" prefWidth="450.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.icq.imagecolorquantizer.controller.MenuViewController">
+   <children>
+      <Button fx:id="colorQuantizerButton" layoutX="175.0" layoutY="168.0" mnemonicParsing="false" onAction="#colorQuantizerAction" text="Color Quantizer" />
+      <Button fx:id="imageMatcherButton" layoutX="175.0" layoutY="225.0" mnemonicParsing="false" onAction="#imagesMatcherAction" text="Images Matcher" />
+   </children>
+</AnchorPane>

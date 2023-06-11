@@ -1,8 +1,14 @@
 package com.icq.imagecolorquantizer.service;
 
+import javafx.scene.control.Alert;
+import javafx.scene.control.TextField;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.IndexColorModel;
+import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -55,4 +61,33 @@ public class UTIL {
         indexedImage.getGraphics().drawImage(image, 0, 0, null);
         return indexedImage;
     }
+
+    public static  String chooseFile(TextField imageFilePath) {
+        // create file chooser
+        FileChooser chooser = new FileChooser();
+
+        // set the initial directory to desktop
+        chooser.setInitialDirectory(new File(System.getProperty("user.home") + "/Desktop"));
+
+        // set title
+        chooser.setTitle("Open File");
+
+        // set filter to only show images
+        chooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.gif"));
+
+        File file = chooser.showOpenDialog(new Stage());
+        if (file != null) {
+            return file.getPath();
+        } else {
+            if (imageFilePath.getText().isEmpty()) {
+
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Information Dialog");
+                alert.setHeaderText("Please Select a File");
+                alert.showAndWait();
+            }
+        }
+        return null;
+    }
+
 }

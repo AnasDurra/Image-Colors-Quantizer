@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
+
+
+<SplitPane dividerPositions="0.5050403225806452" prefHeight="650.0" prefWidth="890.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.icq.imagecolorquantizer.controller.ImagesMatcherViewController">
+  <items>
+    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0" />
+    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+         <children>
+            <Button fx:id="selectImageButton" layoutX="336.0" layoutY="28.0" mnemonicParsing="false" onAction="#selectImageAction" text="Select Image" />
+            <TextField fx:id="imageFilePath" disable="true" layoutX="14.0" layoutY="28.0" prefHeight="26.0" prefWidth="306.0" promptText="Select an image to show" />
+            <VBox layoutX="14.0" layoutY="262.0" prefHeight="127.0" prefWidth="206.0">
+               <children>
+                  <ListView fx:id="directoryListView" prefHeight="87.0" prefWidth="206.0" VBox.vgrow="ALWAYS" />
+                  <HBox spacing="8.0">
+                     <children>
+                        <Button fx:id="addDirectoryButton" disable="true" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#addDirectoryAction" text="Add" HBox.hgrow="ALWAYS" />
+                        <Button fx:id="removeDirectoryButton" disable="true" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#removeDirectoryAction" text="Remove" HBox.hgrow="ALWAYS" />
+                     </children>
+                     <VBox.margin>
+                        <Insets top="8.0" />
+                     </VBox.margin>
+                  </HBox>
+               </children>
+            </VBox>
+            <TextField fx:id="similarityRatioValue" disable="true" layoutX="14.0" layoutY="214.0" promptText="Enter a value" />
+            <Text layoutX="180.0" layoutY="231.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Similarity Ratio" />
+            <DatePicker fx:id="datePiker" disable="true" layoutX="244.0" layoutY="279.0" />
+            <Text layoutX="246.0" layoutY="275.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Date of shoot " />
+            <TextField fx:id="sizeTextField" disable="true" layoutX="244.0" layoutY="326.0" prefHeight="26.0" prefWidth="175.0" promptText="Enter the size " />
+            <Text layoutX="249.0" layoutY="322.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Size of photo" />
+            <ImageView fx:id="originalImageView" fitHeight="152.0" fitWidth="206.0" layoutX="22.0" layoutY="420.0" pickOnBounds="true" preserveRatio="true" />
+            <Button fx:id="cropButton" disable="true" layoutX="303.0" layoutY="420.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="122.0" text="Crop Image" />
+            <Button fx:id="dimensionButton" disable="true" layoutX="304.0" layoutY="460.0" mnemonicParsing="false" text="Change Dimensions" />
+            <Button fx:id="searchButton" disable="true" layoutX="203.0" layoutY="610.0" mnemonicParsing="false" text="Search" />
+            <GridPane fx:id="selectedColorsGridPane" hgap="1.0" layoutX="42.0" layoutY="76.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="59.0" prefWidth="321.0" vgap="1.0">
+              <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+              </columnConstraints>
+              <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+              </rowConstraints>
+               <padding>
+                  <Insets bottom="1.0" left="1.0" right="1.0" top="1.0" />
+               </padding>
+            </GridPane>
+         </children>
+      </AnchorPane>
+  </items>
+</SplitPane>
