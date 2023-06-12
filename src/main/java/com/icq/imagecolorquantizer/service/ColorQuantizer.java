@@ -69,7 +69,7 @@ public class ColorQuantizer {
     }
 
     // Extract Color Palette
-    // Input image , the result of uniform_quantization method
+    // Input image, the result of uniform_quantization method
 
     // Method 2
     public static ProcessedImage kMeans(BufferedImage inputImage, int numClusters) throws IOException {

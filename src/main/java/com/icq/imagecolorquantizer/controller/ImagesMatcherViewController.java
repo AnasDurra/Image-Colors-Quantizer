@@ -1,34 +1,27 @@
 package com.icq.imagecolorquantizer.controller;
 
 import com.icq.imagecolorquantizer.model.ProcessedImage;
+import com.icq.imagecolorquantizer.service.ImageMatcher;
 import com.icq.imagecolorquantizer.service.UTIL;
-import com.icq.imagecolorquantizer.utils.ColorUtils;
 import com.icq.imagecolorquantizer.utils.ImageUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.GridPane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.Stage;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-
-import javafx.scene.layout.GridPane;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.paint.Color;
-import javafx.stage.Stage;
 
 public class ImagesMatcherViewController {
 
@@ -71,12 +64,15 @@ public class ImagesMatcherViewController {
     private GridPane selectedColorsGridPane;
 
     @FXML
-    private TextField similarityRatioValue ;
+    private TextField similarityRatioValue;
+
+    @FXML
+    private GridPane searchResultGP;
 
     /**
      * local state variables
      */
-    private java.util.List<java.awt.Color> selectedColors = new java.util.ArrayList<>();
+    private final java.util.List<java.awt.Color> selectedColors = new java.util.ArrayList<>();
 
     private File selectedItem;
 
@@ -84,8 +80,9 @@ public class ImagesMatcherViewController {
     public void initialize() {
 
         directoryListView.getSelectionModel()
-                         .selectedItemProperty()
-                         .addListener((observable, oldValue, newValue) -> selectedItem = newValue);
+                .selectedItemProperty()
+                .addListener((observable, oldValue, newValue) -> selectedItem = newValue);
+
 
     }
 
@@ -94,14 +91,14 @@ public class ImagesMatcherViewController {
 
         String imagePath = UTIL.chooseFile(imageFilePath);
 
-        // if image path is not null
+        // if the image path is not null
         if (imagePath != null) {
             // assign original image to originalImage
             BufferedImage convertedImage = ImageUtils.loadImageFromPath(imagePath);
             assert convertedImage != null;
             originalImage = new ProcessedImage(convertedImage, UTIL.extractColorPalette(convertedImage));
 
-            // set image path to imageFilePath text field
+            // set the image path to imageFilePath text field
             imageFilePath.setText(imagePath);
 
             // create image object
@@ -123,6 +120,10 @@ public class ImagesMatcherViewController {
             BufferedImage bufferedImage = ImageUtils.loadImageFromPath(imagePath);
 
             if (bufferedImage != null) {
+
+                // clear the previous color selection
+                selectedColors.clear();
+                selectedColorsGridPane.getChildren().clear();
 
                 // get the color palette of the image
                 Set<java.awt.Color> colorPalette = UTIL.extractColorPalette(bufferedImage);
@@ -188,7 +189,9 @@ public class ImagesMatcherViewController {
         if (selectedDirectory != null) {
 //            // Clear the ListView
 //            directoryListView.getItems().clear();
-
+            if (directoryListView.getItems().contains(selectedDirectory)) {
+                return;
+            }
             // Add the selected directory path to the ListView
             directoryListView.getItems().add(selectedDirectory);
         }
@@ -202,6 +205,55 @@ public class ImagesMatcherViewController {
             directoryListView.getItems().remove(selectedItem);
             selectedItem = null;
         }
+    }
+
+    @FXML
+    public void searchButtonClick(ActionEvent event) {
+
+        // clear the grid
+        searchResultGP.getChildren().clear();
+
+        System.out.println("searchButtonClick");
+
+        List<File> foldersList = directoryListView.getItems();
+        List<BufferedImage> imagesList = ImageMatcher.loadMatchingImages(-1, null, foldersList);
+
+
+        imagesList = ImageMatcher.searchForImage(originalImage.image(), imagesList);
+
+
+        // show the result in the grid pane two images per row
+        int numOfColumns = (int) searchResultGP.getWidth() / 180;
+        int numOfRows = imagesList.size() / numOfColumns;
+
+        int i = 0;
+        for (BufferedImage bufferedImage : imagesList) {
+
+            // create image object
+            Image image = ImageUtils.convertBufferedImageToJavaFXImage(bufferedImage);
+
+            // create image view
+            ImageView imageView = new ImageView(image);
+
+            // set the width and height of the image view
+            imageView.setFitWidth(200);
+            imageView.setFitHeight(200);
+
+            // make the image centered in the imageView
+            imageView.setPreserveRatio(true);
+
+            // center the image inside the image view
+            ImageUtils.centerImage(imageView);
+
+            // add the image view to the grid pane
+            searchResultGP.add(imageView, i % numOfColumns, i / numOfColumns);
+
+
+            i++;
+        }
+
+        // change the width of the grid pane to fit the images
+        searchResultGP.setPrefWidth(numOfColumns * 180);
     }
 
 }

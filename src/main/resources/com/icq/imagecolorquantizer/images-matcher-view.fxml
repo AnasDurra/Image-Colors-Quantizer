@@ -4,6 +4,7 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.ImageView?>
@@ -15,10 +16,23 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
 
-
 <SplitPane dividerPositions="0.5050403225806452" prefHeight="650.0" prefWidth="890.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.icq.imagecolorquantizer.controller.ImagesMatcherViewController">
   <items>
-    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0" />
+      <ScrollPane fitToHeight="true" fitToWidth="true" prefHeight="200.0" prefWidth="200.0">
+         <content>
+            <GridPane fx:id="searchResultGP" alignment="TOP_CENTER">
+              <columnConstraints>
+                <ColumnConstraints halignment="CENTER" hgrow="ALWAYS" minWidth="10.0" prefWidth="100.0" />
+                <ColumnConstraints halignment="CENTER" hgrow="ALWAYS" minWidth="10.0" prefWidth="100.0" />
+              </columnConstraints>
+              <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="ALWAYS" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="ALWAYS" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="ALWAYS" />
+              </rowConstraints>
+            </GridPane>
+         </content>
+      </ScrollPane>
     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
          <children>
             <Button fx:id="selectImageButton" layoutX="336.0" layoutY="28.0" mnemonicParsing="false" onAction="#selectImageAction" text="Select Image" />
@@ -46,7 +60,7 @@
             <ImageView fx:id="originalImageView" fitHeight="152.0" fitWidth="206.0" layoutX="22.0" layoutY="420.0" pickOnBounds="true" preserveRatio="true" />
             <Button fx:id="cropButton" disable="true" layoutX="303.0" layoutY="420.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="122.0" text="Crop Image" />
             <Button fx:id="dimensionButton" disable="true" layoutX="304.0" layoutY="460.0" mnemonicParsing="false" text="Change Dimensions" />
-            <Button fx:id="searchButton" disable="true" layoutX="203.0" layoutY="610.0" mnemonicParsing="false" text="Search" />
+            <Button fx:id="searchButton" disable="true" layoutX="203.0" layoutY="610.0" mnemonicParsing="false" onAction="#searchButtonClick" text="Search" />
             <GridPane fx:id="selectedColorsGridPane" hgap="1.0" layoutX="42.0" layoutY="76.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="59.0" prefWidth="321.0" vgap="1.0">
               <columnConstraints>
                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />

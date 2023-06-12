@@ -12,6 +12,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.*;
 
+import static com.icq.imagecolorquantizer.service.UTIL.extractColorPalette;
+
 /**
  * This class is used to compare an image
  * with a set of images based on the selected
@@ -39,7 +41,7 @@ public class ImageMatcher {
             // iterate over the image list
             for (File file : files) {
 
-                if (size == -1 && date == null) {
+                if (size == -1 || date == null) {
                     BufferedImage image = ImageUtils.loadImageFromPath(file.getAbsolutePath());
 
                     if (isIndexedImage(image)) {
@@ -76,28 +78,62 @@ public class ImageMatcher {
      * for the given list of buffered image, and return a Map<BufferedImage, Set<Color>>
      * of colors for each image.
      */
-    public static Map<BufferedImage, Set<Color>> extractColorPalette(List<BufferedImage> images) {
-        Map<BufferedImage, Set<Color>> colorPaletteMap = new HashMap<>();
-        for (BufferedImage image : images) {
-            Set<Color> colorPalette = UTIL.extractColorPalette(image);
-            colorPaletteMap.put(image, colorPalette);
-        }
-        return colorPaletteMap;
-    }
+//    public static Map<BufferedImage, Set<Color>> extractColorPalette(List<BufferedImage> images) {
+//        Map<BufferedImage, Set<Color>> colorPaletteMap = new HashMap<>();
+//        for (BufferedImage image : images) {
+//            Set<Color> colorPalette = UTIL.extractColorPalette(image);
+//            colorPaletteMap.put(image, colorPalette);
+//        }
+//        return colorPaletteMap;
+//    }
 
     /*
      * this function is used to extract the list of colorPalette
      * that contains the given color by 70% or more for the given
      * list of colorPalette.
      */
-    public List<BufferedImage> extractMatchingColorPalette(Color color, Map<BufferedImage, Set<Color>> entries) {
+    public static List<BufferedImage> extractMatchingColorPalette(Map<BufferedImage, Set<Color>> entries) {
         List<BufferedImage> matchingColorPaletteList = new ArrayList<>();
         entries.forEach((image, colorPalette) -> {
-            if (containsColor(color, colorPalette)) {
+
+            if (containsColor(getDominantColor(image), colorPalette)) {
                 matchingColorPaletteList.add(image);
             }
         });
         return matchingColorPaletteList;
+    }
+
+    private static Color getDominantColor(BufferedImage image) {
+        if (image == null) return null;
+
+        // get the image width and height
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        // get the RGB values of the image
+        int[] rgb = image.getRGB(0, 0, width, height, null, 0, width);
+
+        // initialize the RGB values
+        int r = 0;
+        int g = 0;
+        int b = 0;
+
+        // iterate over the RGB values
+        for (int color : rgb) {
+            // get the RGB value
+            // to get the red, green, and blue values
+            r += (color >> 16) & 0xFF;
+            g += (color >> 8) & 0xFF;
+            b += color & 0xFF;
+        }
+
+        // calculate the average of the RGB values
+        r /= rgb.length;
+        g /= rgb.length;
+        b /= rgb.length;
+
+        // return the dominant color
+        return new Color(r, g, b);
     }
 
     private static boolean containsColor(Color color, Set<Color> colorPalette) {
@@ -175,5 +211,207 @@ public class ImageMatcher {
 
     private static LocalDate dateFromMillis(long millis) {
         return LocalDate.ofEpochDay(millis);
+    }
+
+    public static List<BufferedImage> searchForImage(BufferedImage queryImage, List<BufferedImage> images) {
+        return searchByImage(queryImage, images);
+    }
+
+    private static List<BufferedImage> searchByImage(BufferedImage queryImage, List<BufferedImage> images) {
+
+        List<BufferedImage> similarImages = new ArrayList<>();
+
+        for (BufferedImage image : images) {
+
+            // Calculate the similarity score
+            double result = compareColorPalettes(extractColorPalette(queryImage), extractColorPalette(image));
+            if (result >= 60) {
+                System.out.println("imagePath= " + image);
+                System.out.println("similarity ratio= " + result + "\n");
+                similarImages.add(image);
+            }
+
+        }
+
+        System.out.println("Total similar images found: " + similarImages.size());
+        return similarImages;
+    }
+
+    private static List<BufferedImage> searchByClustering(BufferedImage queryImage, List<BufferedImage> images) {
+
+        // Perform color quantization using k-means clustering
+        int k = 20; // Number of clusters
+        List<Color> colors = kMeans(queryImage, k);
+
+        // Compute the color frequencies for the input image
+        int[] frequencies = computeColorFrequencies(queryImage, colors);
+
+        // Compute the color frequencies for each image in the set
+        List<int[]> imageFrequencies = new ArrayList<>();
+        for (BufferedImage image : images) {
+            int[] imageFreq = computeColorFrequencies(image, colors);
+            imageFrequencies.add(imageFreq);
+        }
+        // Compute the Euclidean distance between the input image and each image in the set
+        double[] distances = new double[images.size()];
+        for (int i = 0; i < images.size(); i++) {
+            int[] imageFreq = imageFrequencies.get(i);
+            double distance = 0;
+            for (int j = 0; j < frequencies.length; j++) {
+                double diff = frequencies[j] - imageFreq[j];
+                distance += diff * diff;
+            }
+            distances[i] = Math.sqrt(distance);
+        }
+
+        // Find the index of the image with the smallest distance
+        int minIndex = 0;
+        double minDistance = distances[0];
+        for (int i = 1; i < distances.length; i++) {
+            if (distances[i] < minDistance) {
+                minIndex = i;
+                minDistance = distances[i];
+            }
+        }
+
+
+        // Display the most similar image (top5)
+        List<BufferedImage> similarImages = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            BufferedImage image = images.get(i);
+            similarImages.add(image);
+        }
+        return similarImages;
+    }
+
+    private static List<Color> kMeans(BufferedImage image, int k) {
+        // Convert the image to an array of RGB values
+        int[] pixels = image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth());
+
+        // Initialize the centroids randomly
+        List<Color> centroids = new ArrayList<>();
+        for (int i = 0; i < k; i++) {
+            int index = (int) (Math.random() * pixels.length);
+            Color color = new Color(pixels[index]);
+            centroids.add(color);
+        }
+
+        // Assign each pixel to the closest centroid
+        int[] assignments = new int[pixels.length];
+        for (int i = 0; i < pixels.length; i++) {
+            Color pixelColor = new Color(pixels[i]);
+            int closestIndex = findClosestColorIndex(pixelColor, centroids);
+            assignments[i] = closestIndex;
+        }
+
+        // Update the centroids until convergence
+        boolean converged = false;
+        while (!converged) {
+            // Compute the mean color for each cluster
+            List<Color> means = new ArrayList<>();
+            for (int i = 0; i < k; i++) {
+                int rSum = 0, gSum = 0, bSum = 0, count = 0;
+                for (int j = 0; j < pixels.length; j++) {
+                    if (assignments[j] == i) {
+                        Color pixelColor = new Color(pixels[j]);
+                        rSum += pixelColor.getRed();
+                        gSum += pixelColor.getGreen();
+                        bSum += pixelColor.getBlue();
+                        count++;
+                    }
+                }
+                if (count > 0) {
+                    int rMean = rSum / count;
+                    int gMean = gSum / count;
+                    int bMean = bSum / count;
+                    Color meanColor = new Color(rMean, gMean, bMean);
+                    means.add(meanColor);
+                } else {
+                    means.add(centroids.get(i));
+                }
+            }
+
+            // Check for convergence
+            converged = true;
+            for (int i = 0; i < k; i++) {
+                if (!means.get(i).equals(centroids.get(i))) {
+                    converged = false;
+                    break;
+                }
+            }
+
+            // Update the centroids and assignments
+            centroids = means;
+            for (int i = 0; i < pixels.length; i++) {
+                Color pixelColor = new Color(pixels[i]);
+                int closestIndex = findClosestColorIndex(pixelColor, centroids);
+                assignments[i] = closestIndex;
+            }
+        }
+
+        return centroids;
+    }
+
+    private static int findClosestColorIndex(Color color, List<Color> colors) {
+        int closestIndex = 0;
+        double minDistance = distance(color, colors.get(0));
+        for (int i = 1; i < colors.size(); i++) {
+            double distance = distance(color, colors.get(i));
+            if (distance < minDistance) {
+                closestIndex = i;
+                minDistance = distance;
+            }
+        }
+        return closestIndex;
+    }
+
+    private static double distance(Color c1, Color c2) {
+        double rDiff = c1.getRed() - c2.getRed();
+        double gDiff = c1.getGreen() - c2.getGreen();
+        double bDiff = c1.getBlue() - c2.getBlue();
+        return Math.sqrt(rDiff * rDiff + gDiff * gDiff + bDiff * bDiff);
+    }
+
+    private static int[] computeColorFrequencies(BufferedImage image, List<Color> colors) {
+        int[] frequencies = new int[colors.size()];
+        for (int i = 0; i < image.getWidth(); i++) {
+            for (int j = 0; j < image.getHeight(); j++) {
+                Color pixelColor = new Color(image.getRGB(i, j));
+                int closestIndex = findClosestColorIndex(pixelColor, colors);
+                frequencies[closestIndex]++;
+            }
+        }
+        return frequencies;
+    }
+
+
+    // Compare similarity between color palettes using Euclidean distance
+    private static double compareColorPalettes(Set<Color> palette1, Set<Color> palette2) {
+        double similarityThreshold = 15;
+        int similarColors = 0;
+
+        for (Color color1 : palette1) {
+            double minDistance = Double.MAX_VALUE;
+
+            for (Color color2 : palette2) {
+                // Calculate Euclidean distance between RGB values
+                int rDiff = color1.getRed() - color2.getRed();
+                int gDiff = color1.getGreen() - color2.getGreen();
+                int bDiff = color1.getBlue() - color2.getBlue();
+
+                double distance = Math.sqrt(rDiff * rDiff + gDiff * gDiff + bDiff * bDiff);
+
+                if (distance < minDistance) {
+                    minDistance = distance;
+                }
+            }
+
+            if (minDistance <= similarityThreshold) {
+                similarColors++;
+            }
+        }
+
+        // Calculate the similarity score as a percentage
+        return (double) similarColors / palette1.size() * 100.0;
     }
 }
