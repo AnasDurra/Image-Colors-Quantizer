@@ -6,6 +6,8 @@ import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 
 import javax.imageio.ImageIO;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -30,18 +32,13 @@ public class ImageUtils {
     public static void centerImage(ImageView imageView) {
         Image img = imageView.getImage();
         if (img != null) {
-            double w = 0;
-            double h = 0;
+            double w;
+            double h;
 
             double ratioX = imageView.getFitWidth() / img.getWidth();
             double ratioY = imageView.getFitHeight() / img.getHeight();
 
-            double reducCoeff = 0;
-            if (ratioX >= ratioY) {
-                reducCoeff = ratioY;
-            } else {
-                reducCoeff = ratioX;
-            }
+            double reducCoeff = Math.min(ratioX, ratioY);
 
             w = img.getWidth() * reducCoeff;
             h = img.getHeight() * reducCoeff;
@@ -62,5 +59,17 @@ public class ImageUtils {
         }
     }
 
+    public static BufferedImage resizeImage(BufferedImage originalImage, int targetWidth, int targetHeight) {
+        BufferedImage resizedImage = new BufferedImage(targetWidth, targetHeight, originalImage.getType());
+
+        // AffineTransform is used to perform scaling operation in Java
+        AffineTransform affineTransform = new AffineTransform();
+        affineTransform.scale((double) targetWidth / originalImage.getWidth(), (double) targetHeight / originalImage.getHeight());
+
+        // AffineTransformOp.TYPE_BILINEAR is used for high-quality image
+        AffineTransformOp affineTransformOp = new AffineTransformOp(affineTransform, AffineTransformOp.TYPE_BILINEAR);
+
+        return affineTransformOp.filter(originalImage, resizedImage);
+    }
 
 }

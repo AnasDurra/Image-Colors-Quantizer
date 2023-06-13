@@ -1,7 +1,9 @@
 package com.icq.imagecolorquantizer.service;
 
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.GridPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -62,7 +64,7 @@ public class UTIL {
         return indexedImage;
     }
 
-    public static  String chooseFile(TextField imageFilePath) {
+    public static String chooseFile(TextField imageFilePath) {
         // create file chooser
         FileChooser chooser = new FileChooser();
 
@@ -73,7 +75,7 @@ public class UTIL {
         chooser.setTitle("Open File");
 
         // set filter to only show images
-        chooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.gif"));
+        chooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.gif", "*.jpeg"));
 
         File file = chooser.showOpenDialog(new Stage());
         if (file != null) {
@@ -88,6 +90,58 @@ public class UTIL {
             }
         }
         return null;
+    }
+
+    public static void showColorPalette(BufferedImage bufferedImage) {
+
+        // create a new stage
+        Stage stage = new Stage();
+
+        // create a new grid pane
+        GridPane gridPane = new GridPane();
+
+        // set the padding of the grid pane
+        gridPane.setPadding(new javafx.geometry.Insets(10, 10, 10, 10));
+
+        // set the vertical and horizontal gap between the cells
+        gridPane.setVgap(1);
+        gridPane.setHgap(1);
+
+        // set the background color of the grid pane
+        gridPane.setStyle("-fx-background-color: #ffffff;");
+
+        // get the color palette of the image
+        Set<Color> colorPalette1 = UTIL.extractColorPalette(bufferedImage);
+
+        // num of columns in the color palette grid pane
+        // equals to width of the color palette grid pane
+        // divided by the size of each color rectangle (10)
+        int numOfColumnPalette1 = 35;
+
+        int index1 = 0;
+        for (java.awt.Color color : colorPalette1) {
+
+            // created a cell filled with a colo
+            javafx.scene.shape.Rectangle rectangle = new javafx.scene.shape.Rectangle(10, 10);
+            rectangle.setFill(javafx.scene.paint.Color.rgb(color.getRed(), color.getGreen(), color.getBlue()));
+
+            // add the cell to the grid pane
+            gridPane.add(rectangle, index1 % numOfColumnPalette1, index1 / numOfColumnPalette1);
+
+            index1++;
+        }
+
+        // create a new scene
+        Scene scene = new Scene(gridPane);
+
+        // set the scene to the stage
+        stage.setScene(scene);
+
+        // set the title of the stage
+        stage.setTitle("Color Palette");
+
+        // show the stage
+        stage.show();
     }
 
 }

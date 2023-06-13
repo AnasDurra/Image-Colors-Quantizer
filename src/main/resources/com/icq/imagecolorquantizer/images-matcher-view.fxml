@@ -14,6 +14,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
 <SplitPane dividerPositions="0.5050403225806452" prefHeight="650.0" prefWidth="890.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.icq.imagecolorquantizer.controller.ImagesMatcherViewController">
@@ -51,16 +52,16 @@
                   </HBox>
                </children>
             </VBox>
-            <TextField fx:id="similarityRatioValue" disable="true" layoutX="14.0" layoutY="214.0" promptText="Enter a value" />
-            <Text layoutX="180.0" layoutY="231.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Similarity Ratio" />
+            <TextField fx:id="thresholdTF" disable="true" layoutX="71.0" layoutY="214.0" promptText="optional (default 18)" />
+            <Text layoutX="12.0" layoutY="231.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Threshold" />
             <DatePicker fx:id="datePiker" disable="true" layoutX="244.0" layoutY="279.0" />
             <Text layoutX="246.0" layoutY="275.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Date of shoot " />
             <TextField fx:id="sizeTextField" disable="true" layoutX="244.0" layoutY="326.0" prefHeight="26.0" prefWidth="175.0" promptText="Enter the size " />
-            <Text layoutX="249.0" layoutY="322.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Size of photo" />
+            <Text layoutX="249.0" layoutY="322.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Size of photo (KB)" />
             <ImageView fx:id="originalImageView" fitHeight="152.0" fitWidth="206.0" layoutX="22.0" layoutY="420.0" pickOnBounds="true" preserveRatio="true" />
             <Button fx:id="cropButton" disable="true" layoutX="303.0" layoutY="420.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="122.0" text="Crop Image" />
-            <Button fx:id="dimensionButton" disable="true" layoutX="304.0" layoutY="460.0" mnemonicParsing="false" text="Change Dimensions" />
-            <Button fx:id="searchButton" disable="true" layoutX="203.0" layoutY="610.0" mnemonicParsing="false" onAction="#searchButtonClick" text="Search" />
+            <Button fx:id="dimensionButton" disable="true" layoutX="303.0" layoutY="530.0" mnemonicParsing="false" onAction="#resizeButtonClick" text="Change Dimensions" />
+            <Button fx:id="searchButton" disable="true" layoutX="246.0" layoutY="610.0" mnemonicParsing="false" onAction="#searchButtonClick" text="Search for Image" />
             <GridPane fx:id="selectedColorsGridPane" hgap="1.0" layoutX="42.0" layoutY="76.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="59.0" prefWidth="321.0" vgap="1.0">
               <columnConstraints>
                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -75,6 +76,17 @@
                   <Insets bottom="1.0" left="1.0" right="1.0" top="1.0" />
                </padding>
             </GridPane>
+            <TextField fx:id="newWidthTF" disable="true" layoutX="303.0" layoutY="465.0" prefHeight="25.0" prefWidth="122.0" promptText="new width (optional)">
+               <font>
+                  <Font size="11.0" />
+               </font>
+            </TextField>
+            <TextField fx:id="newHeightTF" disable="true" layoutX="303.0" layoutY="495.0" prefHeight="25.0" prefWidth="122.0" promptText="new height (optional)">
+               <font>
+                  <Font size="11.0" />
+               </font>
+            </TextField>
+            <Button fx:id="searchColorsBtn" disable="true" layoutX="87.0" layoutY="608.0" mnemonicParsing="false" onAction="#searchForColorButtonClick" text="Search for Colors" />
          </children>
       </AnchorPane>
   </items>
