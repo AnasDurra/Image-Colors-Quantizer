@@ -1,14 +1,13 @@
 package com.icq.imagecolorquantizer.utils;
 
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.image.PixelWriter;
-import javafx.scene.image.WritableImage;
+import javafx.scene.image.*;
 
 import javax.imageio.ImageIO;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
+import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 
@@ -47,6 +46,22 @@ public class ImageUtils {
             imageView.setY((imageView.getFitHeight() - h) / 2);
 
         }
+    }
+
+    // convert javafx image to buffer image
+    public static BufferedImage convertJavaFXImageToBufferedImage(Image image) {
+        WritableImage writableImage = new WritableImage((int) image.getWidth(), (int) image.getHeight());
+        PixelWriter pixelWriter = writableImage.getPixelWriter();
+        pixelWriter.setPixels(0, 0, (int) image.getWidth(), (int) image.getHeight(), image.getPixelReader(), 0, 0);
+
+        BufferedImage bufferedImage = new BufferedImage((int) writableImage.getWidth(), (int) writableImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        WritableRaster raster = bufferedImage.getRaster();
+        DataBufferInt dataBuffer = (DataBufferInt) raster.getDataBuffer();
+        int[] data = dataBuffer.getData();
+        writableImage.getPixelReader().getPixels(0, 0, (int) writableImage.getWidth(), (int) writableImage.getHeight(), PixelFormat.getIntArgbInstance(), data, 0, (int) writableImage.getWidth());
+
+
+        return bufferedImage;
     }
 
     public static BufferedImage loadImageFromPath(String imagePath) {

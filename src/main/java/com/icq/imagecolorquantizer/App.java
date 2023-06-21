@@ -21,11 +21,13 @@ public class App extends Application {
 
 
             // create root node
+//            FXMLLoader loader = new FXMLLoader(getClass().getResource("cropping-view.fxml"));
             FXMLLoader loader = new FXMLLoader(getClass().getResource("menu-view.fxml"));
             Parent root = loader.load();
 
             // create scene
             Scene scene = new Scene(root, Color.WHITE);
+
 
             // set title of stage
             stage.setTitle("Image Color Quantizer");
