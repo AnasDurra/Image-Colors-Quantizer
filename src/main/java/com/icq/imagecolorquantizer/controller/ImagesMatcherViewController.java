@@ -123,6 +123,8 @@ public class ImagesMatcherViewController {
                     minSizeTextField.setText("");
                     minImageSize = -1;
                 }
+            } else {
+                minImageSize = -1;
             }
         });
 
@@ -142,6 +144,8 @@ public class ImagesMatcherViewController {
                     maxSizeTextField.setText("");
                     maxImageSize = -1;
                 }
+            } else {
+                maxImageSize = -1;
             }
         });
 
@@ -162,9 +166,9 @@ public class ImagesMatcherViewController {
                 minImageSize = -1;
             }
 
-            // Compare fromImageDate and toImageDate
+            // check the date range
             if (fromImageDate != null && toImageDate != null) {
-                if (fromImageDate.compareTo(toImageDate) > 0) {
+                if (fromImageDate.isAfter(toImageDate)) {
                     // fromImageDate is after toImageDate
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Error");
@@ -180,8 +184,11 @@ public class ImagesMatcherViewController {
                     toImageDate = null;
                 }
             }
-
         });
+
+        // add listener to date pickers
+        fromDatePiker.valueProperty().addListener((observable, oldValue, newValue) -> fromImageDate = newValue);
+        toDatePiker.valueProperty().addListener((observable, oldValue, newValue) -> toImageDate = newValue);
     }
 
 
@@ -379,7 +386,13 @@ public class ImagesMatcherViewController {
 
         //?fetch the list of images that can be found in the selected directories
         //?after applying the filters (if any)
-//        List<BufferedImage> imagesList = ImageMatcher.loadMatchingImages(minImageSize, maxImageSize, fromImageDate, toImageDate, foldersList);
+        List<BufferedImage> imagesList = ImageMatcher.loadMatchingImages(
+                minImageSize,
+                maxImageSize,
+                fromImageDate,
+                toImageDate,
+                foldersList
+        );
 
 
         //! quantize the input image
@@ -402,14 +415,14 @@ public class ImagesMatcherViewController {
         showColorPaletteGrid(colorPalette);
 
 
-//        Map<BufferedImage, Double> imagesMap = ImageMatcher.searchForImage(colorPalette, imagesList, threshold);
+        Map<BufferedImage, Double> imagesMap = ImageMatcher.searchForImage(colorPalette, imagesList, threshold);
 
         // sort the images map by the similarity value
-//        imagesMap = imagesMap.entrySet().stream().sorted(Map.Entry.comparingByValue(Comparator.reverseOrder())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+        imagesMap = imagesMap.entrySet().stream().sorted(Map.Entry.comparingByValue(Comparator.reverseOrder())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
 
         //? clear the search result grid pane
         searchResultGP.getChildren().clear();
-//        showSearchResult(imagesMap);
+        showSearchResult(imagesMap);
         searchColorsBtn.setDisable(false);
     }
 
@@ -485,17 +498,17 @@ public class ImagesMatcherViewController {
 
         //?fetch the list of images that can be found in the selected directories
         //?after applying the filters (if any)
-//        List<BufferedImage> imagesList = ImageMatcher.loadMatchingImages(minImageSize, maxImageSize, fromImageDate, toImageDate, foldersList);
+        List<BufferedImage> imagesList = ImageMatcher.loadMatchingImages(minImageSize, maxImageSize, fromImageDate, toImageDate, foldersList);
 
 
-//        Map<BufferedImage, Double> imagesMap = ImageMatcher.searchForImage(new HashSet<>(selectedColors), imagesList, threshold);
+        Map<BufferedImage, Double> imagesMap = ImageMatcher.searchForImage(new HashSet<>(selectedColors), imagesList, threshold);
 
         // sort the images map by the similarity value
-//        imagesMap = imagesMap.entrySet().stream().sorted(Map.Entry.comparingByValue(Comparator.reverseOrder())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+        imagesMap = imagesMap.entrySet().stream().sorted(Map.Entry.comparingByValue(Comparator.reverseOrder())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
 
         //? clear the search result grid pane
         searchResultGP.getChildren().clear();
-//        showSearchResult(imagesMap);
+        showSearchResult(imagesMap);
 
     }
 
@@ -647,7 +660,6 @@ public class ImagesMatcherViewController {
 
             // pass the selected image to the crop image controller
             cropImageController.initialize(selectedImage);
-
 
 
             Stage stage = new Stage();

@@ -40,7 +40,7 @@ public class ImageMatcher {
         for (File folder : foldersList) {
 
             // get the list of images from the folder
-            List<File> files = ImageSearcher.filterImages(folder, date, size);
+            List<File> files = ImageSearcher.filterImages(folder, minSize, maxSize, fromDate, toDate);
 
             // iterate over the image list
             for (File file : files) {
@@ -56,6 +56,10 @@ public class ImageMatcher {
             }
 
         }
+
+        // For debugging purposes
+        System.out.println("ImagesCount: " + images.size());
+
         return images;
     }
 
