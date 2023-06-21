@@ -5,7 +5,6 @@ import com.icq.imagecolorquantizer.service.ColorQuantizer;
 import com.icq.imagecolorquantizer.service.ImageMatcher;
 import com.icq.imagecolorquantizer.service.UTIL;
 import com.icq.imagecolorquantizer.utils.ImageUtils;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -35,7 +34,10 @@ public class ImagesMatcherViewController {
     private Button cropButton;
 
     @FXML
-    private DatePicker datePiker;
+    private DatePicker toDatePiker;
+
+    @FXML
+    private DatePicker fromDatePiker;
 
     @FXML
     private Button dimensionButton;
@@ -62,7 +64,10 @@ public class ImagesMatcherViewController {
     private Button selectImageButton;
 
     @FXML
-    private TextField sizeTextField;
+    private TextField minSizeTextField;
+
+    @FXML
+    private TextField maxSizeTextField;
 
     @FXML
     private GridPane selectedColorsGridPane;
@@ -89,15 +94,91 @@ public class ImagesMatcherViewController {
     private ProcessedImage originalImage;
     private File selectedItem;
     private BufferedImage loadedImage;
+    private int maxImageSize = -1;
+    private int minImageSize = -1;
+    private LocalDate fromImageDate = null;
+    private LocalDate toImageDate = null;
+
 
     @FXML
     public void initialize() {
 
-        directoryListView.getSelectionModel()
-                .selectedItemProperty()
-                .addListener((observable, oldValue, newValue) -> selectedItem = newValue);
+        directoryListView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> selectedItem = newValue);
 
+        minSizeTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!minSizeTextField.getText().isEmpty()) {
+                try {
+                    minImageSize = Integer.parseInt(minSizeTextField.getText());
+                } catch (NumberFormatException e) {
+                    // show alert
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Error");
+                    alert.setHeaderText("Invalid image size");
+                    alert.setContentText("Please enter a valid image size");
+                    alert.showAndWait();
 
+                    minSizeTextField.setText("");
+                    minImageSize = -1;
+                }
+            }
+        });
+
+        maxSizeTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+
+            if (!maxSizeTextField.getText().isEmpty()) {
+                try {
+                    maxImageSize = Integer.parseInt(maxSizeTextField.getText());
+                } catch (NumberFormatException e) {
+                    // show alert
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Error");
+                    alert.setHeaderText("Invalid image size");
+                    alert.setContentText("Please enter a valid image size");
+                    alert.showAndWait();
+
+                    maxSizeTextField.setText("");
+                    maxImageSize = -1;
+                }
+            }
+        });
+
+        searchButton.setOnMouseClicked(event -> {
+            if (minImageSize != -1 && maxImageSize != -1 && maxImageSize <= minImageSize) {
+                // Show alert for invalid size range
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setHeaderText("Invalid size range");
+                alert.setContentText("The maximum size must be larger than the minimum size.");
+                alert.showAndWait();
+
+                // Clear the entered values
+                minSizeTextField.setText("");
+                maxSizeTextField.setText("");
+
+                maxImageSize = -1;
+                minImageSize = -1;
+            }
+
+            // Compare fromImageDate and toImageDate
+            if (fromImageDate != null && toImageDate != null) {
+                if (fromImageDate.compareTo(toImageDate) > 0) {
+                    // fromImageDate is after toImageDate
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Error");
+                    alert.setHeaderText("Invalid Date Range");
+                    alert.setContentText("Please select a valid date range.");
+                    alert.showAndWait();
+
+                    // Clear the entered values
+                    fromDatePiker.setValue(null);
+                    toDatePiker.setValue(null);
+
+                    fromImageDate = null;
+                    toImageDate = null;
+                }
+            }
+
+        });
     }
 
 
@@ -185,8 +266,10 @@ public class ImagesMatcherViewController {
 
             cropButton.setDisable(false);
             dimensionButton.setDisable(false);
-            datePiker.setDisable(false);
-            sizeTextField.setDisable(false);
+            toDatePiker.setDisable(false);
+            fromDatePiker.setDisable(false);
+            minSizeTextField.setDisable(false);
+            maxSizeTextField.setDisable(false);
             thresholdTF.setDisable(false);
             addDirectoryButton.setDisable(false);
             removeDirectoryButton.setDisable(false);
@@ -282,30 +365,18 @@ public class ImagesMatcherViewController {
 
         // get the search filters
         // 1. image size
-        int imageSize = -1;
-        if (!sizeTextField.getText().isEmpty()) {
-            try {
-                imageSize = Integer.parseInt(sizeTextField.getText());
-            } catch (NumberFormatException e) {
-                // show alert
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Error");
-                alert.setHeaderText("Invalid image size");
-                alert.setContentText("Please enter a valid image size");
-                alert.showAndWait();
-                return;
-            }
-        }
 
         // 2. image date
-        LocalDate imageDate = null;
-        if (datePiker.getValue() != null) {
-            imageDate = datePiker.getValue();
+        if (fromDatePiker.getValue() != null) {
+            fromImageDate = fromDatePiker.getValue();
+        }
+        if (toDatePiker.getValue() != null) {
+            toImageDate = toDatePiker.getValue();
         }
 
         //?fetch the list of images that can be found in the selected directories
         //?after applying the filters (if any)
-        List<BufferedImage> imagesList = ImageMatcher.loadMatchingImages(imageSize, imageDate, foldersList);
+//        List<BufferedImage> imagesList = ImageMatcher.loadMatchingImages(minImageSize, maxImageSize, fromImageDate, toImageDate, foldersList);
 
 
         //! quantize the input image
@@ -328,27 +399,14 @@ public class ImagesMatcherViewController {
         showColorPaletteGrid(colorPalette);
 
 
-        Map<BufferedImage, Double> imagesMap =
-                ImageMatcher.searchForImage(
-                        colorPalette,
-                        imagesList,
-                        threshold
-                );
+//        Map<BufferedImage, Double> imagesMap = ImageMatcher.searchForImage(colorPalette, imagesList, threshold);
 
         // sort the images map by the similarity value
-        imagesMap = imagesMap.entrySet()
-                .stream()
-                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        Map.Entry::getValue,
-                        (e1, e2) -> e1,
-                        LinkedHashMap::new
-                ));
+//        imagesMap = imagesMap.entrySet().stream().sorted(Map.Entry.comparingByValue(Comparator.reverseOrder())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
 
         //? clear the search result grid pane
         searchResultGP.getChildren().clear();
-        showSearchResult(imagesMap);
+//        showSearchResult(imagesMap);
         searchColorsBtn.setDisable(false);
     }
 
@@ -412,53 +470,29 @@ public class ImagesMatcherViewController {
 
         // get the search filters
         // 1. image size
-        int imageSize = -1;
-        if (!sizeTextField.getText().isEmpty()) {
-            try {
-                imageSize = Integer.parseInt(sizeTextField.getText());
-            } catch (NumberFormatException e) {
-                // show alert
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Error");
-                alert.setHeaderText("Invalid image size");
-                alert.setContentText("Please enter a valid image size");
-                alert.showAndWait();
-                return;
-            }
-        }
 
         // 2. image date
-        LocalDate imageDate = null;
-        if (datePiker.getValue() != null) {
-            imageDate = datePiker.getValue();
+        if (fromDatePiker.getValue() != null) {
+            fromImageDate = fromDatePiker.getValue();
         }
+        if (toDatePiker.getValue() != null) {
+            toImageDate = toDatePiker.getValue();
+        }
+
 
         //?fetch the list of images that can be found in the selected directories
         //?after applying the filters (if any)
-        List<BufferedImage> imagesList = ImageMatcher.loadMatchingImages(imageSize, imageDate, foldersList);
+//        List<BufferedImage> imagesList = ImageMatcher.loadMatchingImages(minImageSize, maxImageSize, fromImageDate, toImageDate, foldersList);
 
 
-        Map<BufferedImage, Double> imagesMap =
-                ImageMatcher.searchForImage(
-                        new HashSet<>(selectedColors),
-                        imagesList,
-                        threshold
-                );
+//        Map<BufferedImage, Double> imagesMap = ImageMatcher.searchForImage(new HashSet<>(selectedColors), imagesList, threshold);
 
         // sort the images map by the similarity value
-        imagesMap = imagesMap.entrySet()
-                .stream()
-                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        Map.Entry::getValue,
-                        (e1, e2) -> e1,
-                        LinkedHashMap::new
-                ));
+//        imagesMap = imagesMap.entrySet().stream().sorted(Map.Entry.comparingByValue(Comparator.reverseOrder())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
 
         //? clear the search result grid pane
         searchResultGP.getChildren().clear();
-        showSearchResult(imagesMap);
+//        showSearchResult(imagesMap);
 
     }
 
