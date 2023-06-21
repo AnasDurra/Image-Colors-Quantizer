@@ -5,6 +5,7 @@ import com.icq.imagecolorquantizer.service.ColorQuantizer;
 import com.icq.imagecolorquantizer.service.ImageMatcher;
 import com.icq.imagecolorquantizer.service.UTIL;
 import com.icq.imagecolorquantizer.utils.ImageUtils;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
@@ -101,18 +102,107 @@ public class ImagesMatcherViewController {
     private int minImageSize = -1;
     private LocalDate fromImageDate = null;
     private LocalDate toImageDate = null;
-
+    private int newWidth = -1;
+    private int newHeight = -1;
 
     @FXML
     public void initialize() {
 
         directoryListView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> selectedItem = newValue);
 
+//        newWidthTF.textProperty().addListener((observable, oldValue, newValue) -> {
+//
+//            if (loadedImage != null) {
+//                if (!isNotInteger(newWidthTF.getText())) {
+//                    //get the integer number
+//                    newWidth = Integer.parseInt(newWidthTF.getText());
+//                } else {
+//
+//                    if (newWidthTF.getText().isEmpty()) return;
+//
+//                    //show alert
+//                    Platform.runLater(() -> {
+//                        newWidthTF.clear();
+//                    });
+//
+//                    // show alert
+//                    Alert alert = new Alert(Alert.AlertType.ERROR);
+//                    alert.setTitle("Error");
+//                    alert.setHeaderText("Invalid width");
+//                    alert.setContentText("Please enter a valid width");
+//                    alert.showAndWait();
+//                }
+//            }
+//        });
+
+        newWidthTF.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (loadedImage != null) {
+
+
+                //? 1. validate the new width
+                try {
+                    // get the new width and height after validation
+                    // set the default value to image width and height
+                    newWidth = loadedImage.getWidth();
+                    newWidth = Integer.parseInt(newWidthTF.getText());
+
+                } catch (NumberFormatException e) {
+
+                    if (newWidthTF.getText().isEmpty()) return;
+
+                    Platform.runLater(() -> {
+                        newWidthTF.clear();
+                    });
+
+                    // show alert
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Error");
+                    alert.setHeaderText("Invalid width");
+                    alert.setContentText("Please enter a valid width");
+                    alert.showAndWait();
+                }
+            }
+        });
+
+        newHeightTF.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (loadedImage != null) {
+
+
+                //? 2. validate the new height
+                try {
+                    newHeight = loadedImage.getHeight();
+                    newHeight = Integer.parseInt(newHeightTF.getText());
+
+                } catch (NumberFormatException e) {
+
+                    if (newHeightTF.getText().isEmpty()) return;
+
+                    Platform.runLater(() -> {
+                        newHeightTF.setText("");
+                    });
+
+                    // show alert
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Error");
+                    alert.setHeaderText("Invalid height");
+                    alert.setContentText("Please enter a valid height");
+                    alert.showAndWait();
+                }
+            }
+        });
+
         minSizeTextField.textProperty().addListener((observable, oldValue, newValue) -> {
             if (!minSizeTextField.getText().isEmpty()) {
                 try {
                     minImageSize = Integer.parseInt(minSizeTextField.getText());
                 } catch (NumberFormatException e) {
+
+                    if (minSizeTextField.getText().isEmpty()) return;
+
+                    Platform.runLater(() -> {
+                        minSizeTextField.setText("");
+                    });
+
                     // show alert
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Error");
@@ -120,7 +210,6 @@ public class ImagesMatcherViewController {
                     alert.setContentText("Please enter a valid image size");
                     alert.showAndWait();
 
-                    minSizeTextField.setText("");
                     minImageSize = -1;
                 }
             } else {
@@ -134,6 +223,13 @@ public class ImagesMatcherViewController {
                 try {
                     maxImageSize = Integer.parseInt(maxSizeTextField.getText());
                 } catch (NumberFormatException e) {
+
+                    if (maxSizeTextField.getText().isEmpty()) return;
+
+                    Platform.runLater(() -> {
+                        maxSizeTextField.setText("");
+                    });
+
                     // show alert
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Error");
@@ -141,7 +237,6 @@ public class ImagesMatcherViewController {
                     alert.setContentText("Please enter a valid image size");
                     alert.showAndWait();
 
-                    maxSizeTextField.setText("");
                     maxImageSize = -1;
                 }
             } else {
@@ -195,45 +290,6 @@ public class ImagesMatcherViewController {
     @FXML
     private void resizeButtonClick() {
         if (loadedImage != null) {
-
-            // get the new width and height after validation
-            // set the default value to image width and height
-            int newWidth = loadedImage.getWidth();
-            int newHeight = loadedImage.getHeight();
-
-            //? 1. validate the new width
-            try {
-                newWidth = Integer.parseInt(newWidthTF.getText());
-                if (newWidth < 0) {
-                    throw new NumberFormatException();
-                }
-            } catch (NumberFormatException e) {
-                newWidthTF.setText("0");
-
-                // show alert
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Error");
-                alert.setHeaderText("Invalid width");
-                alert.setContentText("Please enter a valid width");
-                alert.showAndWait();
-            }
-
-            //? 2. validate the new height
-            try {
-                newHeight = Integer.parseInt(newHeightTF.getText());
-                if (newHeight < 0) {
-                    throw new NumberFormatException();
-                }
-            } catch (NumberFormatException e) {
-                newHeightTF.setText("0");
-
-                // show alert
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Error");
-                alert.setHeaderText("Invalid height");
-                alert.setContentText("Please enter a valid height");
-                alert.showAndWait();
-            }
 
             loadedImage = ImageUtils.resizeImage(loadedImage, newWidth, newHeight);
             Image image = ImageUtils.convertBufferedImageToJavaFXImage(loadedImage);
@@ -682,6 +738,15 @@ public class ImagesMatcherViewController {
             originalImageView.setImage(ImageUtils.convertBufferedImageToJavaFXImage(loadedImage));
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public static boolean isNotInteger(String input) {
+        try {
+            Integer.parseInt(input);
+            return false; // Input is a valid integer
+        } catch (Exception e) {
+            return true; // Input is not a valid integer
         }
     }
 }

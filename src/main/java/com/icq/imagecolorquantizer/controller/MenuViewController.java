@@ -9,6 +9,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -49,6 +50,9 @@ public class MenuViewController {
         // set scene
         stage.setScene(scene);
 
+        stage.initModality(Modality.WINDOW_MODAL);
+        stage.initOwner(imageMatcherButton.getScene().getWindow());
+
         stage.show();
 
     }
@@ -81,6 +85,9 @@ public class MenuViewController {
 
         // set scene
         stage.setScene(scene);
+
+        stage.initModality(Modality.WINDOW_MODAL);
+        stage.initOwner(imageMatcherButton.getScene().getWindow());
 
         stage.show();
 
