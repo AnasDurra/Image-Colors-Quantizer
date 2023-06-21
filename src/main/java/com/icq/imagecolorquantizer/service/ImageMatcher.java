@@ -23,9 +23,15 @@ public class ImageMatcher {
      * this function is used to load the images
      * from the given folders list, and only return
      * the list of images that have the same
-     * date or size that equal to LocalDate and Size(KB) parameters.
+     * date or size that equal to LocalDate and Size (KB) parameters.
      */
-    public static List<BufferedImage> loadMatchingImages(int size, LocalDate date, List<File> foldersList) {
+    public static List<BufferedImage> loadMatchingImages(
+            int minSize,
+            int maxSize,
+            LocalDate fromDate,
+            LocalDate toDate,
+            List<File> foldersList
+    ) {
 
         // initialize an empty set of images
         List<BufferedImage> images = new ArrayList<>();
@@ -282,69 +288,147 @@ public class ImageMatcher {
     }
 
 
-    /**
-     * This method calculates the CIEDE2000 color difference between two Lab values
-     * where CIEDE2000 is a color-difference formula based on CIELAB delta E*00.
-     * It has been proposed as a more robust metric than delta E*94.
-     * The measure incorporates the corrections from CIE94 (LCh) and takes into account
-     * perceptual non-uniformities.
-     */
-    private static double ciede2000(double L1, double a1, double b1, double L2, double a2, double b2) {
-        // Calculate Cprime1, Cprime2, Cabbar
-        double Cstar1ab = Math.sqrt(a1 * a1 + b1 * b1);
-        double Cstar2ab = Math.sqrt(a2 * a2 + b2 * b2);
-        double Cstarabmean = (Cstar1ab + Cstar2ab) / 2;
+//    /**
+//     * This method calculates the CIEDE2000 color difference between two Lab values
+//     * where CIEDE2000 is a color-difference formula based on CIELAB delta E*00.
+//     * It has been proposed as a more robust metric than delta E*94.
+//     * The measure incorporates the corrections from CIE94 (LCh) and takes into account
+//     * perceptual non-uniformities.
+//     */
+//    private static double ciede2000(double L1, double a1, double b1, double L2, double a2, double b2) {
+//        // Calculate Cprime1, Cprime2, Cabbar
+//        double Cstar1ab = Math.sqrt(a1 * a1 + b1 * b1);
+//        double Cstar2ab = Math.sqrt(a2 * a2 + b2 * b2);
+//        double Cstarabmean = (Cstar1ab + Cstar2ab) / 2;
+//
+//        double G = 0.5 * (1 - Math.sqrt(Math.pow(Cstarabmean, 7) / (Math.pow(Cstarabmean, 7) + Math.pow(25, 7))));
+//
+//        double aprime1 = (1 + G) * a1;
+//        double aprime2 = (1 + G) * a2;
+//
+//        double Cprime1 = Math.sqrt(aprime1 * aprime1 + b1 * b1);
+//        double Cprime2 = Math.sqrt(aprime2 * aprime2 + b2 * b2);
+//
+//        // Calculate hprime1, hprime2
+//        double hprime1 = Math.atan2(b1, aprime1);
+//        if (hprime1 < 0) {
+//            hprime1 += 2 * Math.PI;
+//        }
+//
+//        double hprime2 = Math.atan2(b2, aprime2);
+//        if (hprime2 < 0) {
+//            hprime2 += 2 * Math.PI;
+//        }
+//
+//        // Calculate dLprime, dCprime, dHprime
+//        double dLprime = L2 - L1;
+//        double dCprime = Cprime2 - Cprime1;
+//
+//        double dHprime = 2 * Math.sqrt(Cprime1 * Cprime2) * Math.sin((hprime2 - hprime1) / 2);
+//
+//        // Calculate CIEDE2000 color difference
+//        double LprimeMean = (L1 + L2) / 2;
+//        double CprimeMean = (Cprime1 + Cprime2) / 2;
+//
+//        // Calculate hprimeMean differently depending on the chroma values
+//        double hprimeMean;
+//        if (Math.abs(hprime1 - hprime2) > Math.PI) {
+//            hprimeMean = (hprime1 + hprime2 + 2 * Math.PI) / 2;
+//        } else if (Cprime1 * Cprime2 == 0) {
+//            hprimeMean = hprime1 + hprime2;
+//        } else {
+//            hprimeMean = (hprime1 + hprime2) / 2;
+//        }
+//
+//        double LprimeMeanMinus50squared = Math.pow(LprimeMean - 50, 2);
+//        double S_L = 1 + ((0.015 * LprimeMeanMinus50squared) / Math.sqrt(20 + LprimeMeanMinus50squared));
+//        double S_C = 1 + 0.045 * CprimeMean;
+//        double T = 1 - 0.17 * Math.cos(hprimeMean - Math.PI / 6) + 0.24 * Math.cos(2 * hprimeMean) + 0.32 * Math.cos(3 * hprimeMean + Math.PI / 30) - 0.2 * Math.cos(4 * hprimeMean - 63 * Math.PI / 180);
+//        double S_H = 1 + 0.015 * T * CprimeMean;
+//        double hprimeMeanMinus275div25squared = Math.pow(hprimeMean - 275 * Math.PI / 180, 2) / Math.pow(25 * Math.PI / 180, 2);
+//        double deltaTheta = 30 * Math.exp(-hprimeMeanMinus275div25squared);
+//        double CprimeMean7 = Math.pow(CprimeMean, 7);
+//        double R_C = 2 * Math.sqrt(CprimeMean7 / (CprimeMean7 + Math.pow(25, 7)));
+//        double R_T = -Math.sin(2 * deltaTheta) * R_C;
+//
+//        return Math.sqrt(Math.pow(dLprime / (S_L * 1), 2) + Math.pow(dCprime / (S_C * 1), 2) + Math.pow(dHprime / (S_H * 1), 2) + R_T * (dCprime / (S_C * 1)) * (dHprime / (S_H * 1)));
+//    }
 
-        double G = 0.5 * (1 - Math.sqrt(Math.pow(Cstarabmean, 7) / (Math.pow(Cstarabmean, 7) + Math.pow(25, 7))));
+    private static double ciede2000(
+            double L1, double a1, double b1,
+            double L2, double a2, double b2
+    ) {
+        // Calculate chroma for each color
+        double chroma1 = Math.sqrt(a1 * a1 + b1 * b1);
+        double chroma2 = Math.sqrt(a2 * a2 + b2 * b2);
 
-        double aprime1 = (1 + G) * a1;
-        double aprime2 = (1 + G) * a2;
+        // Calculate G as the weighted mean of the chromas
+        double meanChroma = (chroma1 + chroma2) / 2;
+        double v = Math.pow(meanChroma, 7) + Math.pow(25, 7);
+        double sqrt = Math.sqrt(Math.pow(meanChroma, 7) / v);
+        double G = 0.5 * (1 - sqrt);
 
-        double Cprime1 = Math.sqrt(aprime1 * aprime1 + b1 * b1);
-        double Cprime2 = Math.sqrt(aprime2 * aprime2 + b2 * b2);
+        // Adjust a values based on G
+        double adjustedA1 = (1 + G) * a1;
+        double adjustedA2 = (1 + G) * a2;
 
-        // Calculate hprime1, hprime2
-        double hprime1 = Math.atan2(b1, aprime1);
-        if (hprime1 < 0) {
-            hprime1 += 2 * Math.PI;
+        // Calculate adjusted chromas
+        double adjustedChroma1 = Math.sqrt(adjustedA1 * adjustedA1 + b1 * b1);
+        double adjustedChroma2 = Math.sqrt(adjustedA2 * adjustedA2 + b2 * b2);
+
+        // Calculate hue for each color
+        double adjustedHue1 = Math.atan2(b1, adjustedA1);
+        if (adjustedHue1 < 0) {
+            adjustedHue1 += 2 * Math.PI;
         }
 
-        double hprime2 = Math.atan2(b2, aprime2);
-        if (hprime2 < 0) {
-            hprime2 += 2 * Math.PI;
+        double adjustedHue2 = Math.atan2(b2, adjustedA2);
+        if (adjustedHue2 < 0) {
+            adjustedHue2 += 2 * Math.PI;
         }
 
-        // Calculate dLprime, dCprime, dHprime
-        double dLprime = L2 - L1;
-        double dCprime = Cprime2 - Cprime1;
+        // Calculate differences in lightness, chroma, and hue
+        double lightnessDifference = L2 - L1;
+        double chromaDifference = adjustedChroma2 - adjustedChroma1;
+        double hueDifference = 2 * Math.sqrt(adjustedChroma1 * adjustedChroma2) *
+                Math.sin((adjustedHue2 - adjustedHue1) / 2);
 
-        double dHprime = 2 * Math.sqrt(Cprime1 * Cprime2) * Math.sin((hprime2 - hprime1) / 2);
+        // Calculate mean lightness
+        double meanLightness = (L1 + L2) / 2;
 
-        // Calculate CIEDE2000 color difference
-        double LprimeMean = (L1 + L2) / 2;
-        double CprimeMean = (Cprime1 + Cprime2) / 2;
-
-        // Calculate hprimeMean differently depending on the chroma values
-        double hprimeMean;
-        if (Math.abs(hprime1 - hprime2) > Math.PI) {
-            hprimeMean = (hprime1 + hprime2 + 2 * Math.PI) / 2;
-        } else if (Cprime1 * Cprime2 == 0) {
-            hprimeMean = hprime1 + hprime2;
+        // Calculate mean hue differently depending on the chroma values
+        double meanHue;
+        if (Math.abs(adjustedHue1 - adjustedHue2) > Math.PI) {
+            meanHue = (adjustedHue1 + adjustedHue2 + 2 * Math.PI) / 2;
         } else {
-            hprimeMean = (hprime1 + hprime2) / 2;
+            meanHue = (adjustedHue1 + adjustedHue2) / 2;
         }
 
-        double LprimeMeanMinus50squared = Math.pow(LprimeMean - 50, 2);
-        double S_L = 1 + ((0.015 * LprimeMeanMinus50squared) / Math.sqrt(20 + LprimeMeanMinus50squared));
-        double S_C = 1 + 0.045 * CprimeMean;
-        double T = 1 - 0.17 * Math.cos(hprimeMean - Math.PI / 6) + 0.24 * Math.cos(2 * hprimeMean) + 0.32 * Math.cos(3 * hprimeMean + Math.PI / 30) - 0.2 * Math.cos(4 * hprimeMean - 63 * Math.PI / 180);
-        double S_H = 1 + 0.015 * T * CprimeMean;
-        double hprimeMeanMinus275div25squared = Math.pow(hprimeMean - 275 * Math.PI / 180, 2) / Math.pow(25 * Math.PI / 180, 2);
-        double deltaTheta = 30 * Math.exp(-hprimeMeanMinus275div25squared);
-        double CprimeMean7 = Math.pow(CprimeMean, 7);
-        double R_C = 2 * Math.sqrt(CprimeMean7 / (CprimeMean7 + Math.pow(25, 7)));
-        double R_T = -Math.sin(2 * deltaTheta) * R_C;
+        // Calculate scaling factors for lightness, chroma, and hue
+        double lightnessScaling = 1 + ((0.015 * Math.pow(meanLightness - 50, 2)) /
+                Math.sqrt(20 + Math.pow(meanLightness - 50, 2)));
+        double chromaScaling = 1 + 0.045 * meanChroma;
+        double hueScaling = 1 + 0.015 * meanChroma *
+                (1 - 0.17 * Math.cos(meanHue - Math.PI / 6) +
+                        0.24 * Math.cos(2 * meanHue) +
+                        0.32 * Math.cos(3 * meanHue + Math.PI / 30) -
+                        0.2 * Math.cos(4 * meanHue - 63 * Math.PI / 180));
 
-        return Math.sqrt(Math.pow(dLprime / (S_L * 1), 2) + Math.pow(dCprime / (S_C * 1), 2) + Math.pow(dHprime / (S_H * 1), 2) + R_T * (dCprime / (S_C * 1)) * (dHprime / (S_H * 1)));
+        // Calculate deltaTheta
+        double deltaTheta = 30 * Math.exp(-Math.pow((meanHue - 275) / (25 * Math.PI / 180), 2));
+
+        // Calculate rotation function
+        double rotationFunction = 2 * sqrt *
+                Math.sin(Math.PI * deltaTheta / 180);
+
+        // Calculate final color difference
+        return Math.sqrt(
+                Math.pow(lightnessDifference / (lightnessScaling * 1), 2) +
+                        Math.pow(chromaDifference / (chromaScaling * 1), 2) +
+                        Math.pow(hueDifference / (hueScaling * 1), 2) +
+                        rotationFunction * (chromaDifference / (chromaScaling * 1)) *
+                                (hueDifference / (hueScaling * 1))
+        );
     }
+
 }

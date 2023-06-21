@@ -6,7 +6,10 @@ import com.icq.imagecolorquantizer.service.ImageMatcher;
 import com.icq.imagecolorquantizer.service.UTIL;
 import com.icq.imagecolorquantizer.utils.ImageUtils;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -609,6 +612,65 @@ public class ImagesMatcherViewController {
 
         // change the width of the grid pane to fit the images
         searchResultGP.setPrefWidth(numOfColumns * 180);
+    }
+
+    /*
+     * this method is an event handler for the crop image button
+     * it should show the crop image window
+     * and pass the selected image to it
+     * and then show the cropped image in the main window
+     */
+    @FXML
+    private void cropImageBtnEventHandler() {
+
+        // get the selected image
+        BufferedImage selectedImage = loadedImage;
+
+        // if no image is selected, show an alert
+        if (selectedImage == null) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText("No image selected");
+            alert.setContentText("Please select an image to crop");
+            alert.showAndWait();
+            return;
+        }
+
+        try {
+            // show the crop image window
+            FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(getClass().getResource("/com/icq/imagecolorquantizer/cropping-view.fxml")));
+            Parent root = loader.load();
+
+            CroppingViewController cropImageController = loader.getController();
+
+            System.out.println("cropImageController = " + cropImageController);
+
+            // pass the selected image to the crop image controller
+            cropImageController.initialize(selectedImage);
+
+
+
+            Stage stage = new Stage();
+            stage.setTitle("Crop Image");
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+
+            // get the cropped image as response from the crop image window
+            BufferedImage croppedImage = cropImageController.getCroppedImage();
+
+            // if no image is cropped, return
+            if (croppedImage == null) {
+                return;
+            }
+
+            // show the cropped image instead of the selected image
+            loadedImage = croppedImage;
+
+            // show the image in the image view
+            originalImageView.setImage(ImageUtils.convertBufferedImageToJavaFXImage(loadedImage));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
 

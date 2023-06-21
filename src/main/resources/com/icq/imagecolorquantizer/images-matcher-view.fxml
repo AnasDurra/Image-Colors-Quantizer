@@ -59,7 +59,7 @@
             <TextField fx:id="minSizeTextField" disable="true" layoutX="250.0" layoutY="363.0" prefHeight="26.0" prefWidth="74.0" promptText="optional" />
             <Text layoutX="252.0" layoutY="359.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Min Size (KB)" />
             <ImageView fx:id="originalImageView" fitHeight="152.0" fitWidth="206.0" layoutX="22.0" layoutY="420.0" pickOnBounds="true" preserveRatio="true" />
-            <Button fx:id="cropButton" disable="true" layoutX="303.0" layoutY="420.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="122.0" text="Crop Image" />
+            <Button fx:id="cropButton" disable="true" layoutX="303.0" layoutY="420.0" mnemonicParsing="false" onAction="#cropImageBtnEventHandler" prefHeight="26.0" prefWidth="122.0" text="Crop Image" />
             <Button fx:id="dimensionButton" disable="true" layoutX="303.0" layoutY="530.0" mnemonicParsing="false" onAction="#resizeButtonClick" text="Change Dimensions" />
             <Button fx:id="searchButton" disable="true" layoutX="248.0" layoutY="608.0" mnemonicParsing="false" onAction="#searchButtonClick" text="Search for Image" />
             <GridPane fx:id="selectedColorsGridPane" hgap="1.0" layoutX="42.0" layoutY="76.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="59.0" prefWidth="321.0" vgap="1.0">
