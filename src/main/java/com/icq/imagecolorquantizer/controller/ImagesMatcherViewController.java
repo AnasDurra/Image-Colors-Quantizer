@@ -110,56 +110,35 @@ public class ImagesMatcherViewController {
 
         directoryListView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> selectedItem = newValue);
 
-//        newWidthTF.textProperty().addListener((observable, oldValue, newValue) -> {
-//
-//            if (loadedImage != null) {
-//                if (!isNotInteger(newWidthTF.getText())) {
-//                    //get the integer number
-//                    newWidth = Integer.parseInt(newWidthTF.getText());
-//                } else {
-//
-//                    if (newWidthTF.getText().isEmpty()) return;
-//
-//                    //show alert
-//                    Platform.runLater(() -> {
-//                        newWidthTF.clear();
-//                    });
-//
-//                    // show alert
-//                    Alert alert = new Alert(Alert.AlertType.ERROR);
-//                    alert.setTitle("Error");
-//                    alert.setHeaderText("Invalid width");
-//                    alert.setContentText("Please enter a valid width");
-//                    alert.showAndWait();
-//                }
-//            }
-//        });
-
         newWidthTF.textProperty().addListener((observable, oldValue, newValue) -> {
             if (loadedImage != null) {
-
 
                 //? 1. validate the new width
                 try {
                     // get the new width and height after validation
                     // set the default value to image width and height
-                    newWidth = loadedImage.getWidth();
+                    if (newValue.trim().isEmpty()) {
+                        newWidth = loadedImage.getWidth();
+                        return;
+                    }
+
                     newWidth = Integer.parseInt(newWidthTF.getText());
 
                 } catch (NumberFormatException e) {
 
-                    if (newWidthTF.getText().isEmpty()) return;
+                    // if the new width is invalid, set it to the default value
+                    newWidth = loadedImage.getWidth();
 
-                    Platform.runLater(() -> {
-                        newWidthTF.clear();
-                    });
-
-                    // show alert
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Error");
                     alert.setHeaderText("Invalid width");
                     alert.setContentText("Please enter a valid width");
                     alert.showAndWait();
+
+                    //show alert
+                    Platform.runLater(() -> {
+                        newWidthTF.clear();
+                    });
                 }
             }
         });
@@ -175,11 +154,11 @@ public class ImagesMatcherViewController {
 
                 } catch (NumberFormatException e) {
 
-                    if (newHeightTF.getText().isEmpty()) return;
-
-                    Platform.runLater(() -> {
-                        newHeightTF.setText("");
-                    });
+                    // if the new height is invalid, set it to the default value
+                    if (newHeightTF.getText().isEmpty()) {
+                        newHeight = loadedImage.getHeight();
+                        return;
+                    }
 
                     // show alert
                     Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -187,103 +166,78 @@ public class ImagesMatcherViewController {
                     alert.setHeaderText("Invalid height");
                     alert.setContentText("Please enter a valid height");
                     alert.showAndWait();
+
+                    Platform.runLater(() -> {
+                        newHeightTF.clear();
+                    });
                 }
             }
         });
 
         minSizeTextField.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (!minSizeTextField.getText().isEmpty()) {
-                try {
-                    minImageSize = Integer.parseInt(minSizeTextField.getText());
-                } catch (NumberFormatException e) {
-
-                    if (minSizeTextField.getText().isEmpty()) return;
-
-                    Platform.runLater(() -> {
-                        minSizeTextField.setText("");
-                    });
-
-                    // show alert
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle("Error");
-                    alert.setHeaderText("Invalid image size");
-                    alert.setContentText("Please enter a valid image size");
-                    alert.showAndWait();
-
-                    minImageSize = -1;
-                }
-            } else {
+            if (minSizeTextField.getText().trim().isEmpty()) {
                 minImageSize = -1;
+                return;
             }
+
+            try {
+                minImageSize = Integer.parseInt(minSizeTextField.getText());
+            } catch (NumberFormatException e) {
+
+                if (minSizeTextField.getText().isEmpty()) return;
+
+                // show alert
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setHeaderText("Invalid image size");
+                alert.setContentText("Please enter a valid image size");
+                alert.showAndWait();
+
+                minImageSize = -1;
+                Platform.runLater(() -> {
+                    minSizeTextField.clear();
+                });
+            }
+
         });
 
         maxSizeTextField.textProperty().addListener((observable, oldValue, newValue) -> {
 
-            if (!maxSizeTextField.getText().isEmpty()) {
-                try {
-                    maxImageSize = Integer.parseInt(maxSizeTextField.getText());
-                } catch (NumberFormatException e) {
-
-                    if (maxSizeTextField.getText().isEmpty()) return;
-
-                    Platform.runLater(() -> {
-                        maxSizeTextField.setText("");
-                    });
-
-                    // show alert
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle("Error");
-                    alert.setHeaderText("Invalid image size");
-                    alert.setContentText("Please enter a valid image size");
-                    alert.showAndWait();
-
-                    maxImageSize = -1;
-                }
-            } else {
+            if (maxSizeTextField.getText().isEmpty()) {
                 maxImageSize = -1;
+                return;
             }
-        });
+            try {
+                maxImageSize = Integer.parseInt(maxSizeTextField.getText());
+            } catch (NumberFormatException e) {
 
-        searchButton.setOnMouseClicked(event -> {
-            if (minImageSize != -1 && maxImageSize != -1 && maxImageSize <= minImageSize) {
-                // Show alert for invalid size range
+                if (maxSizeTextField.getText().isEmpty()) return;
+
+
+                // show alert
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Error");
-                alert.setHeaderText("Invalid size range");
-                alert.setContentText("The maximum size must be larger than the minimum size.");
+                alert.setHeaderText("Invalid image size");
+                alert.setContentText("Please enter a valid image size");
                 alert.showAndWait();
 
-                // Clear the entered values
-                minSizeTextField.setText("");
-                maxSizeTextField.setText("");
-
                 maxImageSize = -1;
-                minImageSize = -1;
-            }
-
-            // check the date range
-            if (fromImageDate != null && toImageDate != null) {
-                if (fromImageDate.isAfter(toImageDate)) {
-                    // fromImageDate is after toImageDate
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle("Error");
-                    alert.setHeaderText("Invalid Date Range");
-                    alert.setContentText("Please select a valid date range.");
-                    alert.showAndWait();
-
-                    // Clear the entered values
-                    fromDatePiker.setValue(null);
-                    toDatePiker.setValue(null);
-
-                    fromImageDate = null;
-                    toImageDate = null;
-                }
+                Platform.runLater(() -> {
+                    maxSizeTextField.clear();
+                });
             }
         });
 
+
         // add listener to date pickers
-        fromDatePiker.valueProperty().addListener((observable, oldValue, newValue) -> fromImageDate = newValue);
-        toDatePiker.valueProperty().addListener((observable, oldValue, newValue) -> toImageDate = newValue);
+        fromDatePiker.valueProperty().
+
+                addListener((observable, oldValue, newValue) -> fromImageDate = newValue);
+        toDatePiker.valueProperty().
+
+                addListener((observable, oldValue, newValue) -> toImageDate = newValue);
+
+
     }
 
 
@@ -379,6 +333,41 @@ public class ImagesMatcherViewController {
 
         // TODO: FOR DEBUGGING
         System.out.println("searchButtonClick");
+
+        if (minImageSize != -1 && maxImageSize != -1 && maxImageSize <= minImageSize) {
+            // Show alert for invalid size range
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText("Invalid size range");
+            alert.setContentText("The maximum size must be larger than the minimum size.");
+            alert.showAndWait();
+
+            // Clear the entered values
+            minSizeTextField.setText("");
+            maxSizeTextField.setText("");
+
+            maxImageSize = -1;
+            minImageSize = -1;
+        }
+
+        // check the date range
+        if (fromImageDate != null && toImageDate != null) {
+            if (fromImageDate.isAfter(toImageDate)) {
+                // fromImageDate is after toImageDate
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setHeaderText("Invalid Date Range");
+                alert.setContentText("Please select a valid date range.");
+                alert.showAndWait();
+
+                // Clear the entered values
+                fromDatePiker.setValue(null);
+                toDatePiker.setValue(null);
+
+                fromImageDate = null;
+                toImageDate = null;
+            }
+        }
 
         // first of all, validate the user input
 
